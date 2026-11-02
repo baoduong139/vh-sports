@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>VH Sports - Đồ Thể Thao Cao Cấp & Figma Canvas View (v4.0)</title>
+
+  <!-- PWA & Mobile Meta Tags (Edge-to-Edge) -->
+  <meta name="theme-color" content="#FF6600">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="VH Sports">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='25' fill='%23FF6600'/%3E%3Ctext x='50' y='65' font-size='42' font-family='sans-serif' font-weight='900' fill='white' text-anchor='middle'%3EVH%3C/text%3E%3C/svg%3E">
+  <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1511556532299-8f662fc26c06?w=192&auto=format&fit=crop&q=80">
+
+  <!-- Google Fonts: Inter, Plus Jakarta Sans, JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN v3.4 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#fff7ed',
+              100: '#ffedd5',
+              500: '#ff6600',
+              600: '#ea580c',
+              primary: '#FF6600', // Cam thể thao năng động
+              electric: '#2563EB', // Xanh dương Electric
+              charcoal: '#0F172A', // Chữ đen than
+              border: '#E2E8F0',   // Viền xám mảnh
+              bg: '#F8FAFC'        // Nền trắng sáng thể thao
+            },
+            figma: {
+              bg: '#F5F5F5',
+              dark: '#1e1e1e',
+              panel: '#2c2c2c',
+              wire: '#0D99FF',
+              wirePurple: '#7B61FF'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+            display: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          animation: {
+            'scan': 'scanLine 2.2s ease-in-out infinite alternate',
+            'shake': 'shake 0.5s ease-in-out',
+            'fadeIn': 'fadeIn 0.25s ease-out'
+          },
+          keyframes: {
+            scanLine: {
+              '0%': { top: '8%' },
+              '100%': { top: '92%' }
+            },
+            shake: {
+              '0%, 100%': { transform: 'translateX(0)' },
+              '20%, 60%': { transform: 'translateX(-6px)' },
+              '40%, 80%': { transform: 'translateX(6px)' }
+            },
+            fadeIn: {
+              '0%': { opacity: '0', transform: 'scale(0.98)' },
+              '100%': { opacity: '1', transform: 'scale(1)' }
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- React 18, ReactDOM UMD -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+  <!-- Canvas Confetti for Celebration on Success -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+  <style>
+    /* Custom Scrollbar */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.03);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.3);
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Subtle shadow elevations */
+    .shadow-3xl {
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.04);
+    }
+  </style>
+</head>
+<body class="h-full bg-[#F5F5F5] text-[#0F172A] antialiased overflow-hidden select-none">
+  <div id="root" class="w-full h-full">
+    <!-- Initial Loading Screen -->
+    <div class="w-full h-full flex flex-col items-center justify-center bg-[#1e1e1e] text-white space-y-4">
+      <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-orange-500 flex items-center justify-center font-black text-xl shadow-lg shadow-blue-500/30 animate-pulse">
+        VH
+      </div>
+      <div class="text-center">
+        <h2 class="text-sm font-bold tracking-tight text-white">Đang tải VH Sports Store & Figma Canvas...</h2>
+        <p class="text-xs text-neutral-400 mt-1">VH Sports - TikTok Shop + Shopee + Lazada Architecture (v4.0)</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Modules -->
+  <script src="products.js"></script>
+  <script src="icons.js"></script>
+  <script src="artboards.js"></script>
+  <script src="figma-components.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
