@@ -285,6 +285,30 @@
       h('polyline', { points: '2 17 12 22 22 17' }),
       h('polyline', { points: '2 12 12 17 22 12' })
     ),
+    Volume2: (p) => h(IconBase, p,
+      h('polygon', { points: '11 5 6 9 2 9 2 15 6 15 11 19 11 5' }),
+      h('path', { d: 'M15.54 8.46a5 5 0 0 1 0 7.07' }),
+      h('path', { d: 'M19.07 4.93a10 10 0 0 1 0 14.14' })
+    ),
+    VolumeX: (p) => h(IconBase, p,
+      h('polygon', { points: '11 5 6 9 2 9 2 15 6 15 11 19 11 5' }),
+      h('line', { x1: '23', y1: '9', x2: '17', y2: '15' }),
+      h('line', { x1: '17', y1: '9', x2: '23', y2: '15' })
+    ),
+    Share2: (p) => h(IconBase, p,
+      h('circle', { cx: '18', cy: '5', r: '3' }),
+      h('circle', { cx: '6', cy: '12', r: '3' }),
+      h('circle', { cx: '18', cy: '19', r: '3' }),
+      h('line', { x1: '8.59', y1: '13.51', x2: '15.42', y2: '17.49' }),
+      h('line', { x1: '15.41', y1: '6.51', x2: '8.59', y2: '10.49' })
+    ),
+    Gift: (p) => h(IconBase, p,
+      h('polyline', { points: '20 12 20 22 4 22 4 12' }),
+      h('rect', { width: '20', height: '5', x: '2', y: '7' }),
+      h('line', { x1: '12', y1: '22', x2: '12', y2: '7' }),
+      h('path', { d: 'M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z' }),
+      h('path', { d: 'M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z' })
+    ),
 
     // Payment Provider Logos
     MoMoLogo: (p) => h('div', {

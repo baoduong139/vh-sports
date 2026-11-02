@@ -71,8 +71,175 @@
   // Frosted Bottom Navigation (Always Visible at bottom of mobile frame)
   function FrostedBottomNav({ activeTab, onNavigate, cartCount = 0, ctx }) {
     const [showLiveStream, setShowLiveStream] = useState(false);
-    const [likeCount, setLikeCount] = useState(1240);
+    const [likeCount, setLikeCount] = useState(1480);
     const [hasFollowed, setHasFollowed] = useState(false);
+    const [cameraAngle, setCameraAngle] = useState('angle1'); // 'angle1' | 'angle2' | 'angle3'
+    const [isMuted, setIsMuted] = useState(false);
+    const [showProductDrawer, setShowProductDrawer] = useState(false);
+    const [hasClaimedVoucher, setHasClaimedVoucher] = useState(false);
+    const [chestClaimed, setChestClaimed] = useState(false);
+    const [chatInput, setChatInput] = useState('');
+    const [floatingHearts, setFloatingHearts] = useState([]);
+    const [comments, setComments] = useState([
+      { id: 1, user: 'Nguyễn Văn Dương', badge: 'VIP Diamond', text: 'Áo đấu Real Madrid 2026 size L còn hàng không shop?', color: 'text-amber-400' },
+      { id: 2, user: 'Minh Tuấn (Hà Nội)', text: 'Đã nhận giày Vapor 16 đinh TF hôm qua, da êm bám sân tốt lắm!', color: 'text-blue-400' },
+      { id: 3, user: 'Hồng Ánh', text: 'Có voucher freeship 0đ không shop ơi?', color: 'text-emerald-400' },
+      { id: 4, user: 'VH Sports (Host)', text: '🔥 Đang ghim giày đá banh sale sốc 25% kèm quà tặng tất dệt kim nhé cả nhà!', color: 'text-[#FF6600]' }
+    ]);
+
+    useEffect(() => {
+      window.openVHStream = () => setShowLiveStream(true);
+      return () => {
+        delete window.openVHStream;
+      };
+    }, []);
+
+    const angleImages = {
+      angle1: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1400&auto=format&fit=crop&q=80', // Form giày cận cảnh
+      angle2: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1400&auto=format&fit=crop&q=80', // Vận động viên sút bóng, thử lực đệm
+      angle3: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=1400&auto=format&fit=crop&q=80'  // Thử áo Real Madrid
+    };
+
+    const liveProducts = [
+      {
+        id: 'live_1',
+        name: 'Giày Đá Banh Nike ZoomX Vapor 16 Pro TF',
+        price: 2450000,
+        originalPrice: 3200000,
+        discount: '-24%',
+        image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&auto=format&fit=crop&q=80',
+        badge: 'Ghim #1 - Đang Review',
+        stock: 'Chỉ còn 4 đôi',
+        size: '41'
+      },
+      {
+        id: 'live_2',
+        name: 'Vợt Cầu Lông Yonex Astrox 88D Pro 4U',
+        price: 3890000,
+        originalPrice: 4500000,
+        discount: '-14%',
+        image: 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?w=400&auto=format&fit=crop&q=80',
+        badge: 'Ghim #2 - Tặng Cước',
+        stock: 'Còn 9 cây',
+        size: '4U-G5'
+      },
+      {
+        id: 'live_3',
+        name: 'Áo Đấu CLB Real Madrid 2026 Authentic',
+        price: 890000,
+        originalPrice: 1250000,
+        discount: '-29%',
+        image: 'https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=400&auto=format&fit=crop&q=80',
+        badge: 'Ghim #3 - Hot Trend',
+        stock: 'Đủ size S-2XL',
+        size: 'L'
+      },
+      {
+        id: 'live_4',
+        name: 'Giày Chạy Bộ Nike Air Zoom Pegasus 41',
+        price: 2850000,
+        originalPrice: 3500000,
+        discount: '-19%',
+        image: 'https://images.unsplash.com/photo-1584735935682-2f2b69dff9d2?w=400&auto=format&fit=crop&q=80',
+        badge: 'Ghim #4 - Freeship 0đ',
+        stock: 'Còn 15 đôi',
+        size: '42'
+      },
+      {
+        id: 'live_5',
+        name: 'Băng Đầu Gối Pro-Fit Trợ Lực Thể Thao',
+        price: 290000,
+        originalPrice: 420000,
+        discount: '-31%',
+        image: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=400&auto=format&fit=crop&q=80',
+        badge: 'Ghim #5 - Y Tế',
+        stock: 'Còn 28 cái',
+        size: 'Free'
+      },
+      {
+        id: 'live_6',
+        name: 'Quả Bóng Thi Đấu FIFA Quality Pro 2026',
+        price: 1450000,
+        originalPrice: 1800000,
+        discount: '-19%',
+        image: 'https://images.unsplash.com/photo-1614632537423-1e6c2e7e0aab?w=400&auto=format&fit=crop&q=80',
+        badge: 'Ghim #6 - FIFA Pro',
+        stock: 'Còn 7 quả',
+        size: 'Size 5'
+      }
+    ];
+
+    const triggerHeart = (emoji = '❤️') => {
+      setLikeCount(c => c + 1);
+      const newHeart = {
+        id: Date.now() + Math.random(),
+        emoji,
+        left: 65 + Math.random() * 28
+      };
+      setFloatingHearts(prev => [...prev.slice(-14), newHeart]);
+      setTimeout(() => {
+        setFloatingHearts(prev => prev.filter(h => h.id !== newHeart.id));
+      }, 1500);
+    };
+
+    const handleSendComment = (textToSend) => {
+      const txt = textToSend || chatInput;
+      if (!txt) return;
+      const newCmt = {
+        id: Date.now(),
+        user: (ctx && ctx.userProfile && ctx.userProfile.name) || 'Nguyễn Văn Dương',
+        badge: 'VIP Diamond',
+        text: txt,
+        color: 'text-amber-400'
+      };
+      setComments(prev => [...prev, newCmt]);
+      setChatInput('');
+      if (ctx && ctx.showToast) ctx.showToast(`Đã gửi bình luận: "${txt}"`);
+    };
+
+    const handleClaimVoucher = () => {
+      setHasClaimedVoucher(true);
+      if (ctx && ctx.setVoucher) {
+        ctx.setVoucher({
+          code: 'LIVEVIP2026',
+          description: 'Voucher độc quyền Live: Giảm 15% tối đa 200K',
+          discountPercent: 15,
+          maxDiscount: 200000,
+          minOrder: 500000
+        });
+      }
+      if (window.confetti) window.confetti({ particleCount: 60, spread: 60 });
+      if (ctx && ctx.showToast) ctx.showToast('🎉 Đã áp dụng Voucher LIVEVIP2026 (-15%)!');
+    };
+
+    const handleClaimChest = () => {
+      if (chestClaimed) return;
+      setChestClaimed(true);
+      if (ctx && ctx.setUserProfile) {
+        ctx.setUserProfile(prev => ({ ...prev, points: (prev.points || 2450) + 500 }));
+      }
+      if (window.confetti) window.confetti({ particleCount: 70, spread: 70 });
+      if (ctx && ctx.showToast) ctx.showToast('🎁 Chúc mừng bạn đã mở Rương nhận +500 Xu VIP!');
+    };
+
+    const handleBuyLiveProduct = (prod) => {
+      if (ctx && ctx.addToCart) {
+        ctx.addToCart({
+          id: prod.id,
+          name: prod.name + ' (Live)',
+          price: prod.price,
+          originalPrice: prod.originalPrice,
+          image: prod.image,
+          size: prod.size || '41',
+          quantity: 1,
+          selected: true
+        });
+      }
+      if (window.confetti) window.confetti({ particleCount: 50, spread: 50 });
+      setShowProductDrawer(false);
+      setShowLiveStream(false);
+      onNavigate(3);
+    };
 
     const navItems = [
       {
@@ -173,141 +340,321 @@
       // iOS Home Indicator bar
       h('div', { className: 'w-28 h-1 bg-slate-300 rounded-full mx-auto mt-1.5 opacity-60' }),
 
-      // Interactive TikTok Shop Live Stream Modal
+      // ========================================================
+      // TRUE FULL-SCREEN EDGE-TO-EDGE TIKTOK SHOP LIVESTREAM
+      // ========================================================
       showLiveStream && h('div', {
-        className: 'fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 animate-fadeIn'
+        className: 'fixed inset-0 z-[100] w-screen h-screen bg-slate-950 text-white flex flex-col justify-between overflow-hidden select-none animate-fadeIn'
       },
-        h('div', {
-          className: 'relative w-full max-w-[393px] h-[780px] max-h-[95vh] rounded-[36px] overflow-hidden bg-slate-950 text-white flex flex-col justify-between shadow-2xl border border-slate-700'
-        },
-          // Background Livestream Simulation Image
-          h('img', {
-            src: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=900&auto=format&fit=crop&q=80',
-            alt: 'Live Stream Host',
-            className: 'absolute inset-0 w-full h-full object-cover opacity-60 filter contrast-125'
-          }),
-          h('div', { className: 'absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-black/90 pointer-events-none' }),
+        // 1. Full-bleed Dynamic Video / Action Background
+        h('img', {
+          src: angleImages[cameraAngle],
+          alt: 'Live Stream Video Action',
+          className: 'absolute inset-0 w-full h-full object-cover filter contrast-110 brightness-95 transition-all duration-500'
+        }),
+        h('div', { className: 'absolute inset-0 bg-gradient-to-b from-black/85 via-black/20 to-black/95 pointer-events-none' }),
 
-          // Top Stream Header
-          h('div', { className: 'relative z-10 p-3 pt-5 flex items-center justify-between' },
-            // Host Info
-            h('div', { className: 'flex items-center space-x-2 bg-black/50 backdrop-blur-md p-1.5 pr-3 rounded-full border border-white/20' },
-              h('div', { className: 'w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-orange-500 flex items-center justify-center font-black text-xs text-white' }, 'VH'),
+        // 2. Floating Heart FX Layer
+        h('div', { className: 'absolute inset-0 pointer-events-none overflow-hidden z-20' },
+          floatingHearts.map(hObj => h('div', {
+            key: hObj.id,
+            className: 'absolute bottom-24 text-3xl animate-bounce transition-all duration-1000',
+            style: {
+              left: `${hObj.left}%`,
+              opacity: 0.9,
+              transform: 'translateY(-140px) scale(1.3)'
+            }
+          }, hObj.emoji))
+        ),
+
+        // 3. TOP STREAM HEADER & MULTI-ANGLE CONTROLS
+        h('div', { className: 'relative z-30 p-3 pt-6 space-y-2' },
+          // Top Row: Host info & Quick Exit
+          h('div', { className: 'flex items-center justify-between gap-2' },
+            // Host Badge
+            h('div', { className: 'flex items-center space-x-2 bg-black/60 backdrop-blur-md p-1 pr-3 rounded-full border border-white/20' },
+              h('div', { className: 'w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-orange-500 flex items-center justify-center font-black text-xs text-white shadow-xs' }, 'VH'),
               h('div', null,
                 h('div', { className: 'flex items-center space-x-1.5' },
-                  h('span', { className: 'font-bold text-xs leading-none' }, 'VH Sports Official'),
+                  h('span', { className: 'font-extrabold text-xs leading-none text-white' }, 'VH Sports Official'),
                   h('span', { className: 'bg-red-600 text-[8px] font-black px-1 rounded uppercase animate-pulse' }, 'LIVE')
                 ),
-                h('div', { className: 'text-[10px] text-slate-300' }, '14.8k mắt xem • Top 1 Thể Thao')
+                h('div', { className: 'text-[9.5px] text-slate-300' }, '18.5k mắt xem • Top 1 Thể Thao')
               ),
               h('button', {
                 onClick: () => {
                   setHasFollowed(!hasFollowed);
                   if (ctx && ctx.showToast) ctx.showToast(hasFollowed ? 'Đã hủy theo dõi' : 'Đã theo dõi VH Sports Mall!');
                 },
-                className: `text-[10px] font-bold px-2 py-1 rounded-full transition-all ${
-                  hasFollowed ? 'bg-white/20 text-white' : 'bg-red-500 hover:bg-red-600 text-white'
+                className: `text-[10px] font-bold px-2 py-1 rounded-full transition-all cursor-pointer ${
+                  hasFollowed ? 'bg-white/20 text-white' : 'bg-red-500 hover:bg-red-600 text-white shadow-xs'
                 }`
               }, hasFollowed ? 'Đang theo' : '+ Theo dõi')
             ),
 
-            // Close button
-            h('button', {
-              onClick: () => setShowLiveStream(false),
-              className: 'w-8 h-8 rounded-full bg-black/60 hover:bg-white/20 text-white flex items-center justify-center backdrop-blur-md transition-colors'
-            }, h(I.X, { size: 16 }))
+            // Right action pills: Audio, Share, Close (Full Screen Exit)
+            h('div', { className: 'flex items-center space-x-1.5' },
+              // Mute/Unmute
+              h('button', {
+                onClick: () => {
+                  setIsMuted(!isMuted);
+                  if (ctx && ctx.showToast) ctx.showToast(isMuted ? '🔊 Đã bật âm thanh livestream' : '🔇 Đã tắt tiếng');
+                },
+                title: isMuted ? 'Bật âm thanh' : 'Tắt tiếng',
+                className: 'w-8 h-8 rounded-full bg-black/60 hover:bg-white/20 text-white flex items-center justify-center backdrop-blur-md transition-colors cursor-pointer'
+              }, h(isMuted ? (I.VolumeX || I.Mic) : (I.Volume2 || I.Mic), { size: 16 })),
+
+              // Share
+              h('button', {
+                onClick: () => {
+                  if (ctx && ctx.copyToClipboard) ctx.copyToClipboard(window.location.href);
+                  else if (ctx && ctx.showToast) ctx.showToast('🔗 Đã sao chép link phiên Live!');
+                },
+                title: 'Chia sẻ livestream',
+                className: 'w-8 h-8 rounded-full bg-black/60 hover:bg-white/20 text-white flex items-center justify-center backdrop-blur-md transition-colors cursor-pointer'
+              }, h(I.Share2 || I.Copy, { size: 15 })),
+
+              // Full Screen Close Button (Thoát Live)
+              h('button', {
+                onClick: () => setShowLiveStream(false),
+                title: 'Đóng Live Stream (Thoát toàn màn hình)',
+                className: 'w-8 h-8 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center backdrop-blur-md transition-colors shadow-md cursor-pointer'
+              }, h(I.X, { size: 16 }))
+            )
           ),
 
-          // Middle: Live Comments Ticker
-          h('div', { className: 'relative z-10 p-3 max-h-56 overflow-hidden space-y-1.5 text-xs' },
+          // Second Row: Camera Angle Switcher (Chuyển Góc Quay Trực Tiếp)
+          h('div', { className: 'flex items-center space-x-1.5 overflow-x-auto no-scrollbar pt-1' },
+            h('span', { className: 'text-[9.5px] font-bold text-amber-300 uppercase tracking-wider shrink-0 bg-black/50 px-2 py-0.5 rounded-md' }, '🎥 Góc quay:'),
             [
-              { user: 'Nguyễn Văn Dương', badge: 'VIP Diamond', text: 'Áo đấu Real Madrid 2026 size L còn hàng không shop?', color: 'text-amber-400' },
-              { user: 'Minh Tuấn (Hà Nội)', text: 'Đã nhận giày Vapor 16 đinh TF hôm qua, da êm bám sân tốt lắm!', color: 'text-blue-400' },
-              { user: 'Hồng Ánh', text: 'Có voucher freeship 0đ không shop ơi?', color: 'text-emerald-400' },
-              { user: 'VH Sports (Host)', text: '🔥 Đang ghim giày đá banh sale sốc 25% kèm quà tặng tất dệt kim nhé cả nhà!', color: 'text-[#FF6600]' }
-            ].map((cmt, idx) => h('div', {
-              key: idx,
-              className: 'bg-black/45 backdrop-blur-xs px-2.5 py-1 rounded-xl max-w-[85%] border border-white/10'
-            },
-              h('span', { className: `font-bold ${cmt.color} mr-1` }, cmt.user + ':'),
-              h('span', { className: 'text-slate-100' }, cmt.text)
-            ))
+              { id: 'angle1', label: '👟 Cận cảnh Form Giày' },
+              { id: 'angle2', label: '⚽ Test Độ Nảy Sút Bóng' },
+              { id: 'angle3', label: '👕 Mặc Thử Áo Real 2026' }
+            ].map(ang => h('button', {
+              key: ang.id,
+              onClick: () => {
+                setCameraAngle(ang.id);
+                if (ctx && ctx.showToast) ctx.showToast(`Đã chuyển sang: ${ang.label}`);
+              },
+              className: `px-2.5 py-1 rounded-full text-[10px] font-bold transition-all whitespace-nowrap cursor-pointer backdrop-blur-md ${
+                cameraAngle === ang.id
+                  ? 'bg-amber-400 text-slate-950 shadow-xs'
+                  : 'bg-black/50 text-white/90 hover:bg-black/70 border border-white/10'
+              }`
+            }, ang.label))
           ),
 
-          // Bottom: Pinned Product Card & Live Controls
-          h('div', { className: 'relative z-10 p-3 pb-6 space-y-2' },
-            // Pinned Card #1
+          // Third Row: Flash Voucher Drop Banner & Lucky Chest (Rương Xu)
+          h('div', { className: 'flex items-center space-x-2 pt-1' },
+            // Voucher Drop Banner
             h('div', {
-              className: 'bg-white/95 text-slate-900 rounded-2xl p-2.5 flex items-center space-x-2.5 shadow-xl border border-white/50 backdrop-blur-md'
+              className: 'flex-1 bg-gradient-to-r from-red-600/90 to-orange-600/90 backdrop-blur-md p-1.5 px-3 rounded-2xl border border-white/20 flex items-center justify-between text-xs shadow-lg'
             },
-              h('div', { className: 'relative shrink-0' },
-                h('img', {
-                  src: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=150&auto=format&fit=crop&q=80',
-                  alt: 'Ghim Sản Phẩm',
-                  className: 'w-14 h-14 rounded-xl object-cover border border-slate-200'
-                }),
-                h('span', { className: 'absolute -top-1 -left-1 bg-amber-400 text-slate-950 text-[9px] font-black px-1 rounded' }, 'Ghim #1')
-              ),
-              h('div', { className: 'flex-1 min-w-0' },
-                h('div', { className: 'text-[11px] font-extrabold line-clamp-1' }, 'Giày Đá Banh Nike ZoomX Vapor 16 TF'),
-                h('div', { className: 'flex items-baseline space-x-1.5' },
-                  h('span', { className: 'text-sm font-black text-[#FF6600]' }, '2.450.000₫'),
-                  h('span', { className: 'text-[10px] text-slate-400 line-through' }, '3.200.000₫'),
-                  h('span', { className: 'text-[9px] bg-red-100 text-red-600 font-bold px-1 rounded' }, '-24%')
+              h('div', { className: 'flex items-center space-x-1.5 min-w-0' },
+                h('span', { className: 'text-sm' }, '🎟️'),
+                h('div', { className: 'truncate' },
+                  h('span', { className: 'font-black text-amber-200 text-[10px] uppercase block leading-none' }, 'VOUCHER ĐỘC QUYỀN LIVE'),
+                  h('span', { className: 'text-[10.5px] font-bold text-white leading-tight' }, 'Giảm 15% tối đa 200K')
                 )
               ),
               h('button', {
-                onClick: () => {
-                  if (ctx && ctx.addToCart) {
-                    ctx.addToCart({
-                      id: 'live_prod_1',
-                      name: 'Giày Đá Banh Nike ZoomX Vapor 16 TF (Live)',
-                      price: 2450000,
-                      originalPrice: 3200000,
-                      image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&auto=format&fit=crop&q=80',
-                      size: '41',
-                      quantity: 1,
-                      selected: true
-                    });
-                  }
-                  if (window.confetti) window.confetti({ particleCount: 50, spread: 50 });
-                  setShowLiveStream(false);
-                  onNavigate(3);
-                },
-                className: 'px-3 py-2 bg-gradient-to-r from-amber-500 to-[#FF6600] text-white font-black text-xs rounded-xl shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer whitespace-nowrap'
-              }, 'Mua Ngay')
+                onClick: handleClaimVoucher,
+                disabled: hasClaimedVoucher,
+                className: `px-2.5 py-1 rounded-xl text-[10px] font-black transition-all cursor-pointer whitespace-nowrap ml-2 shadow-xs ${
+                  hasClaimedVoucher
+                    ? 'bg-white/20 text-white cursor-default'
+                    : 'bg-amber-400 hover:bg-amber-300 text-slate-950 active:scale-95'
+                }`
+              }, hasClaimedVoucher ? '✓ Đã Lưu' : 'Lưu Mã')
             ),
 
-            // Live Action Buttons
-            h('div', { className: 'flex items-center space-x-2' },
-              h('div', { className: 'flex-1 bg-black/50 backdrop-blur-md px-3 py-2 rounded-full border border-white/20 text-xs text-slate-400 flex items-center space-x-1.5' },
-                h('span', null, '💬'),
-                h('input', {
-                  type: 'text',
-                  placeholder: 'Bình luận hoặc hỏi size với shop...',
-                  className: 'bg-transparent outline-none text-white w-full text-xs placeholder:text-slate-400'
-                })
+            // Lucky Chest Button
+            h('button', {
+              onClick: handleClaimChest,
+              className: `px-2.5 py-1.5 rounded-2xl border border-amber-400/40 backdrop-blur-md flex items-center space-x-1.5 text-xs font-bold transition-all cursor-pointer shrink-0 shadow-lg ${
+                chestClaimed
+                  ? 'bg-emerald-600/90 text-white'
+                  : 'bg-amber-500/80 hover:bg-amber-500 text-slate-950 animate-pulse'
+              }`
+            },
+              h('span', null, '🎁'),
+              h('span', { className: 'text-[10px]' }, chestClaimed ? 'Đã nhận' : 'Rương 500 Xu')
+            )
+          )
+        ),
+
+        // 4. MIDDLE AREA: Real-time Comments Stream Ticker
+        h('div', { className: 'relative z-20 px-3 max-h-56 overflow-y-auto no-scrollbar space-y-1.5 text-xs my-auto' },
+          comments.slice(-6).map((cmt) => h('div', {
+            key: cmt.id,
+            className: 'bg-black/55 backdrop-blur-md px-3 py-1.5 rounded-2xl max-w-[85%] border border-white/10 text-xs shadow-md animate-fadeIn'
+          },
+            h('div', { className: 'flex items-center space-x-1' },
+              cmt.badge && h('span', { className: 'text-[8px] bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-black px-1 rounded-sm' }, cmt.badge),
+              h('span', { className: `font-bold ${cmt.color}` }, cmt.user + ':')
+            ),
+            h('p', { className: 'text-slate-100 text-[11px] leading-snug mt-0.5' }, cmt.text)
+          ))
+        ),
+
+        // 5. BOTTOM AREA: Pinned Product Card #1, Quick Comments, Live Actions
+        h('div', { className: 'relative z-30 p-3 pb-6 space-y-2' },
+          // Pinned Product Card (Ghim #1)
+          h('div', {
+            className: 'bg-white/95 text-slate-900 rounded-2xl p-2.5 flex items-center space-x-2.5 shadow-2xl border border-white/60 backdrop-blur-md'
+          },
+            h('div', { className: 'relative shrink-0' },
+              h('img', {
+                src: liveProducts[0].image,
+                alt: liveProducts[0].name,
+                className: 'w-14 h-14 rounded-xl object-cover border border-slate-200'
+              }),
+              h('span', { className: 'absolute -top-1 -left-1 bg-amber-400 text-slate-950 text-[9px] font-black px-1 rounded shadow-xs' }, 'Ghim #1')
+            ),
+            h('div', { className: 'flex-1 min-w-0' },
+              h('div', { className: 'text-[11px] font-extrabold line-clamp-1 text-slate-900' }, liveProducts[0].name),
+              h('div', { className: 'flex items-baseline space-x-1.5 mt-0.5' },
+                h('span', { className: 'text-sm font-black text-[#FF6600]' }, window.formatVND(liveProducts[0].price)),
+                h('span', { className: 'text-[10px] text-slate-400 line-through' }, window.formatVND(liveProducts[0].originalPrice)),
+                h('span', { className: 'text-[9px] bg-red-100 text-red-600 font-bold px-1 rounded' }, liveProducts[0].discount)
+              ),
+              h('div', { className: 'text-[9px] text-slate-500' }, liveProducts[0].stock)
+            ),
+            h('button', {
+              onClick: () => handleBuyLiveProduct(liveProducts[0]),
+              className: 'px-3.5 py-2 bg-gradient-to-r from-amber-500 to-[#FF6600] text-white font-black text-xs rounded-xl shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer whitespace-nowrap'
+            }, 'Mua Ngay')
+          ),
+
+          // Quick Reaction Comment Pills
+          h('div', { className: 'flex items-center space-x-1.5 overflow-x-auto no-scrollbar pb-0.5' },
+            [
+              '🔥 Đôi này đẹp quá shop',
+              '👟 Xin tư vấn chân bè size 41',
+              '👕 Áo Real có sẵn không?',
+              '🚚 Giao 2h nội thành không?'
+            ].map((quickText, qIdx) => h('button', {
+              key: qIdx,
+              onClick: () => handleSendComment(quickText),
+              className: 'px-2.5 py-1 bg-black/60 hover:bg-black/80 text-white/90 text-[10px] font-semibold rounded-full border border-white/15 whitespace-nowrap transition-colors cursor-pointer active:scale-95'
+            }, quickText))
+          ),
+
+          // Live Bottom Controls Row
+          h('div', { className: 'flex items-center space-x-2' },
+            // Túi Vàng Live Showcase Button
+            h('button', {
+              onClick: () => setShowProductDrawer(true),
+              className: 'px-3 py-2 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black text-xs flex items-center space-x-1.5 shadow-lg active:scale-95 transition-all cursor-pointer shrink-0'
+            },
+              h(I.ShoppingBag, { size: 16 }),
+              h('span', null, `Túi Đồ (${liveProducts.length})`)
+            ),
+
+            // Comment Input
+            h('form', {
+              onSubmit: (e) => {
+                e.preventDefault();
+                handleSendComment();
+              },
+              className: 'flex-1 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 text-xs text-slate-300 flex items-center space-x-1.5'
+            },
+              h('input', {
+                type: 'text',
+                value: chatInput,
+                onChange: (e) => setChatInput(e.target.value),
+                placeholder: 'Bình luận hoặc hỏi size...',
+                className: 'bg-transparent outline-none text-white w-full text-xs placeholder:text-slate-400'
+              }),
+              chatInput && h('button', {
+                type: 'submit',
+                className: 'text-amber-400 font-bold text-xs hover:text-amber-300 cursor-pointer'
+              }, 'Gửi')
+            ),
+
+            // Heart / Reactions Button
+            h('button', {
+              onClick: () => triggerHeart('❤️'),
+              className: 'w-10 h-10 rounded-full bg-red-500/90 hover:bg-red-500 text-white flex items-center justify-center backdrop-blur-md transition-all active:scale-90 relative cursor-pointer shadow-lg'
+            },
+              h('span', { className: 'text-base' }, '❤️'),
+              h('span', { className: 'absolute -top-1 -right-1 bg-black text-[8px] font-black px-1.5 py-0.2 rounded-full border border-white/20' }, likeCount)
+            ),
+
+            // Direct Cart Button
+            h('button', {
+              onClick: () => {
+                setShowLiveStream(false);
+                onNavigate(3);
+              },
+              title: 'Mở giỏ hàng',
+              className: 'w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center font-black transition-all active:scale-90 relative cursor-pointer shadow-lg'
+            },
+              h(I.ShoppingCart, { size: 16 }),
+              cartCount > 0 && h('span', { className: 'absolute -top-1 -right-1 bg-red-600 text-white text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center' }, cartCount)
+            )
+          )
+        ),
+
+        // 6. SLIDE-UP PRODUCT SHOWCASE DRAWER (Túi Vàng 6 Sản Phẩm)
+        showProductDrawer && h('div', {
+          className: 'fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex flex-col justify-end animate-fadeIn'
+        },
+          h('div', {
+            className: 'w-full max-w-lg mx-auto bg-white text-slate-900 rounded-t-3xl max-h-[75vh] flex flex-col shadow-2xl overflow-hidden'
+          },
+            // Drawer Header
+            h('div', { className: 'p-3.5 border-b border-slate-200 flex items-center justify-between shrink-0 bg-slate-50' },
+              h('div', { className: 'flex items-center space-x-2' },
+                h('div', { className: 'w-7 h-7 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-black' }, '🛍️'),
+                h('div', null,
+                  h('h3', { className: 'font-extrabold text-sm text-slate-900' }, `Túi Đồ Livestream (${liveProducts.length} sản phẩm)`),
+                  h('p', { className: 'text-[10px] text-slate-500' }, 'Áp dụng mã LIVEVIP2026 giảm thêm 15%')
+                )
               ),
               h('button', {
-                onClick: () => {
-                  setLikeCount(c => c + 1);
-                  if (ctx && ctx.showToast) ctx.showToast('❤️ Đã thả tim cho Livestream!');
-                },
-                className: 'w-10 h-10 rounded-full bg-red-500/80 hover:bg-red-500 text-white flex items-center justify-center backdrop-blur-md transition-all active:scale-90 relative'
+                onClick: () => setShowProductDrawer(false),
+                className: 'p-1.5 text-slate-400 hover:text-slate-700 rounded-full cursor-pointer'
+              }, h(I.X, { size: 18 }))
+            ),
+
+            // Products List
+            h('div', { className: 'flex-1 overflow-y-auto p-3 space-y-2.5 custom-scrollbar' },
+              liveProducts.map(prod => h('div', {
+                key: prod.id,
+                className: 'bg-slate-50 border border-slate-200/90 rounded-2xl p-2.5 flex items-center space-x-3 shadow-2xs hover:shadow-xs transition-shadow'
               },
-                h('span', { className: 'text-base' }, '❤️'),
-                h('span', { className: 'absolute -top-1 -right-1 bg-black text-[8px] font-bold px-1 rounded-full' }, likeCount)
-              ),
+                h('div', { className: 'relative shrink-0' },
+                  h('img', {
+                    src: prod.image,
+                    alt: prod.name,
+                    className: 'w-16 h-16 rounded-xl object-cover border border-slate-200'
+                  }),
+                  h('span', { className: 'absolute -top-1 -left-1 bg-amber-400 text-slate-950 text-[8px] font-black px-1 rounded' }, prod.badge)
+                ),
+                h('div', { className: 'flex-1 min-w-0' },
+                  h('h4', { className: 'font-bold text-xs text-slate-900 line-clamp-1' }, prod.name),
+                  h('div', { className: 'flex items-baseline space-x-2 mt-0.5' },
+                    h('span', { className: 'font-black text-sm text-[#FF6600]' }, window.formatVND(prod.price)),
+                    h('span', { className: 'text-[10px] text-slate-400 line-through' }, window.formatVND(prod.originalPrice)),
+                    h('span', { className: 'text-[9px] bg-red-100 text-red-600 font-bold px-1 rounded' }, prod.discount)
+                  ),
+                  h('div', { className: 'text-[10px] text-emerald-600 font-semibold mt-0.5' }, `⚡ ${prod.stock}`)
+                ),
+                h('button', {
+                  onClick: () => handleBuyLiveProduct(prod),
+                  className: 'px-3 py-2 bg-[#FF6600] hover:bg-[#EA580C] text-white font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all cursor-pointer shrink-0'
+                }, 'Mua ngay')
+              ))
+            ),
+
+            // Drawer Footer
+            h('div', { className: 'p-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between' },
+              h('span', { className: 'text-xs text-slate-500' }, 'Freeship đơn từ 0đ trên phiên Live'),
               h('button', {
-                onClick: () => {
-                  setShowLiveStream(false);
-                  onNavigate(3);
-                },
-                className: 'w-10 h-10 rounded-full bg-amber-400 hover:bg-amber-500 text-slate-950 flex items-center justify-center font-black transition-all active:scale-90 relative'
-              },
-                h(I.ShoppingCart, { size: 16 }),
-                cartCount > 0 && h('span', { className: 'absolute -top-1 -right-1 bg-red-600 text-white text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center' }, cartCount)
-              )
+                onClick: () => setShowProductDrawer(false),
+                className: 'px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl cursor-pointer'
+              }, 'Đóng túi đồ')
             )
           )
         )
@@ -854,7 +1201,13 @@
             window.VH_DATA.shorts.map(s => h('div', {
               key: s.id,
               className: 'w-36 h-52 rounded-xl bg-gradient-to-b ' + s.bgGradient + ' p-2 flex flex-col justify-between shrink-0 shadow-xs relative overflow-hidden cursor-pointer group active:scale-98 transition-all',
-              onClick: () => ctx.showToast('Đang phát video: "' + s.title + '"')
+              onClick: () => {
+                if (s.isLive && window.openVHStream) {
+                  window.openVHStream();
+                } else {
+                  ctx.showToast('Đang phát video: "' + s.title + '"');
+                }
+              }
             },
               h('div', { className: 'flex items-center justify-between z-10' },
                 s.isLive ? h('span', {
@@ -1040,96 +1393,96 @@
       // Split-View Body
       h('div', { className: 'flex-1 flex overflow-hidden pb-14' },
 
-        // CỘT TRÁI: Menu cuộn dọc các bộ môn thể thao
-        h('div', { className: 'w-28 sm:w-32 bg-slate-100 border-r border-slate-200/80 overflow-y-auto no-scrollbar shrink-0' },
+        // CỘT TRÁI: Menu cuộn dọc các bộ môn thể thao (Thu nhỏ gọn chuẩn TikTok Shop)
+        h('div', { className: 'w-20 sm:w-22 bg-slate-100 border-r border-slate-200/80 overflow-y-auto no-scrollbar shrink-0' },
           mainCats.map(cat => {
             const isSelected = selectedMainCat === cat.id;
             const IconComponent = I[cat.icon] || I.Activity;
             return h('button', {
               key: cat.id,
               onClick: () => setSelectedMainCat(cat.id),
-              className: `w-full py-3 px-2 flex flex-col items-center justify-center text-center transition-all relative border-b border-slate-200/50 ${
+              className: `w-full py-2 px-1 flex flex-col items-center justify-center text-center transition-all relative border-b border-slate-200/50 cursor-pointer ${
                 isSelected
-                  ? 'bg-white text-blue-600 font-extrabold shadow-xs'
+                  ? 'bg-white text-blue-600 font-extrabold shadow-2xs'
                   : 'text-slate-600 hover:bg-slate-200/60 font-semibold'
               }`
             },
-              isSelected && h('div', { className: 'absolute left-0 top-2 bottom-2 w-1 bg-blue-600 rounded-r-md' }),
+              isSelected && h('div', { className: 'absolute left-0 top-1.5 bottom-1.5 w-1 bg-blue-600 rounded-r-md' }),
               h('div', {
-                className: `w-8 h-8 rounded-xl flex items-center justify-center mb-1 ${
-                  isSelected ? 'bg-blue-50 text-blue-600' : 'bg-slate-200/70 text-slate-600'
+                className: `w-7 h-7 rounded-lg flex items-center justify-center mb-0.5 ${
+                  isSelected ? 'bg-blue-50 text-blue-600' : 'bg-slate-200/70 text-slate-500'
                 }`
-              }, h(IconComponent, { size: 16 })),
-              h('span', { className: 'text-[11px] leading-tight' }, cat.name),
+              }, h(IconComponent, { size: 14 })),
+              h('span', { className: 'text-[9.5px] leading-tight font-medium tracking-tight' }, cat.name),
               cat.badge && h('span', {
-                className: 'mt-0.5 text-[8px] font-black bg-red-500 text-white px-1 rounded-full'
+                className: 'mt-0.5 text-[7px] font-black bg-red-500 text-white px-1 py-0.1 rounded-full uppercase'
               }, cat.badge)
             );
           })
         ),
 
-        // CỘT PHẢI: Lưới danh mục con & Sản phẩm (Tương tác đầy đủ)
-        h('div', { className: 'flex-1 overflow-y-auto p-3 space-y-3 custom-scrollbar bg-white' },
+        // CỘT PHẢI: Lưới danh mục con & Sản phẩm (Không gian rộng rãi, thoáng đãng)
+        h('div', { className: 'flex-1 overflow-y-auto p-2.5 space-y-2.5 custom-scrollbar bg-white' },
 
           // Header Bộ Môn
-          h('div', { className: 'bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 p-2.5 rounded-xl' },
+          h('div', { className: 'bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 p-2 rounded-xl' },
             h('div', { className: 'flex items-center justify-between' },
               h('h3', { className: 'font-extrabold text-xs text-blue-950 uppercase tracking-tight' }, activeCatObj?.name),
               h('span', { className: 'text-[10px] font-bold text-blue-600' }, `${catProducts.length} sản phẩm`)
             ),
-            h('p', { className: 'text-[10px] text-slate-500 mt-0.5 leading-tight' }, activeCatObj?.desc)
+            h('p', { className: 'text-[9.5px] text-slate-500 mt-0.5 leading-tight' }, activeCatObj?.desc)
           ),
 
           // Lưới Danh Mục Con Kèm Ảnh
           h('div', null,
-            h('span', { className: 'block font-extrabold text-[11px] text-slate-700 uppercase tracking-wider mb-2' }, 'Danh Mục Con'),
-            h('div', { className: 'grid grid-cols-2 gap-2' },
+            h('span', { className: 'block font-extrabold text-[10px] text-slate-700 uppercase tracking-wider mb-1.5' }, 'Danh Mục Con'),
+            h('div', { className: 'grid grid-cols-2 gap-1.5' },
               subCats.map(sub => h('div', {
                 key: sub.id,
                 onClick: () => ctx.showToast(`Đang lọc nhóm: ${sub.name}`),
-                className: 'bg-slate-50 hover:bg-blue-50/50 border border-slate-200/70 hover:border-blue-300 rounded-xl p-2 flex flex-col items-center text-center cursor-pointer transition-all active:scale-95 group'
+                className: 'bg-slate-50 hover:bg-blue-50/50 border border-slate-200/70 hover:border-blue-300 rounded-xl p-1.5 flex flex-col items-center text-center cursor-pointer transition-all active:scale-95 group'
               },
                 h(SafeImage, {
                   src: sub.image,
                   alt: sub.name,
-                  containerClassName: 'w-14 h-14 rounded-lg mb-1.5 shadow-2xs group-hover:scale-105 transition-transform'
+                  containerClassName: 'w-12 h-12 rounded-lg mb-1 shadow-2xs group-hover:scale-105 transition-transform'
                 }),
-                h('span', { className: 'font-bold text-[10px] text-slate-800 line-clamp-1 leading-tight' }, sub.name),
-                h('span', { className: 'text-[9px] text-slate-400' }, sub.items)
+                h('span', { className: 'font-bold text-[9.5px] text-slate-800 line-clamp-1 leading-tight' }, sub.name),
+                h('span', { className: 'text-[8.5px] text-slate-400' }, sub.items)
               ))
             )
           ),
 
-          // Sản Phẩm Nổi Bật Thuộc Nhóm (Có nút thêm mở Size Sheet ngay tại chỗ!)
+          // Sản Phẩm Nổi Bật Thuộc Nhóm (Rộng rãi, không bị che nút)
           h('div', null,
-            h('span', { className: 'block font-extrabold text-[11px] text-slate-700 uppercase tracking-wider mb-2' }, 'Sản Phẩm Đang Bán'),
+            h('span', { className: 'block font-extrabold text-[10px] text-slate-700 uppercase tracking-wider mb-1.5' }, 'Sản Phẩm Đang Bán'),
             catProducts.length === 0 ? h('div', { className: 'text-center py-6 text-slate-400 text-xs' },
               'Chưa có sản phẩm phù hợp với bộ lọc này.'
             ) : h('div', { className: 'space-y-2' },
               catProducts.map(p => h('div', {
                 key: p.id,
-                className: 'bg-slate-50 border border-slate-200/80 rounded-xl p-2 flex items-center space-x-2.5 shadow-2xs'
+                className: 'bg-slate-50 border border-slate-200/80 rounded-xl p-2 flex items-center space-x-2 shadow-2xs'
               },
                 h(SafeImage, {
                   src: p.image,
                   alt: p.name,
                   fallback: p.fallbackImage,
-                  containerClassName: 'w-14 h-14 rounded-lg'
+                  containerClassName: 'w-12 h-12 rounded-lg shrink-0'
                 }),
                 h('div', { className: 'flex-1 min-w-0' },
-                  h('h5', { className: 'font-bold text-[11px] text-slate-800 truncate' }, p.name),
+                  h('h5', { className: 'font-bold text-[10.5px] text-slate-800 truncate' }, p.name),
                   h('div', { className: 'flex items-center space-x-1.5 mt-0.5' },
                     h('span', { className: 'font-black text-xs text-[#FF6600]' }, window.formatVND(p.price)),
                     h('span', { className: 'text-[9px] text-slate-400 line-through' }, window.formatVND(p.originalPrice))
                   ),
-                  h('div', { className: 'text-[9px] text-slate-500 mt-0.5' }, `Size chuẩn: ${p.defaultSize}`)
+                  h('div', { className: 'text-[8.5px] text-slate-500 mt-0.5' }, `Size chuẩn: ${p.defaultSize}`)
                 ),
                 // Nút mở size sheet trực tiếp tại cột phải
                 h('button', {
                   onClick: () => setSelectedProductForSize(p),
-                  className: 'h-7 px-3 bg-[#FF6600] hover:bg-[#EA580C] text-white font-bold text-[10px] rounded-full active:scale-95 transition-all flex items-center space-x-1 shrink-0 shadow-2xs'
+                  className: 'h-6.5 px-2.5 bg-[#FF6600] hover:bg-[#EA580C] text-white font-bold text-[9.5px] rounded-full active:scale-95 transition-all flex items-center space-x-1 shrink-0 shadow-2xs cursor-pointer'
                 },
-                  h(I.Plus, { size: 12 }),
+                  h(I.Plus, { size: 11 }),
                   h('span', null, 'Chọn size')
                 )
               ))
