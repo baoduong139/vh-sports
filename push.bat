@@ -21,11 +21,11 @@ if %ERRORLEVEL% neq 0 (
     )
 )
 
-echo [*] Dang kiem tra trang thai thu muc...
+echo [*] Dang kiem tra thay doi trong thu muc...
 "%GIT_EXE%" add .
 
-set /p COMMIT_MSG="[?] Nhap ghi chu commit (Enter de dung mac dinh): "
-if "%COMMIT_MSG%"=="" set COMMIT_MSG=Update VH Sports E-Commerce & Figma Canvas: %date% %time%
+set /p COMMIT_MSG="[?] Nhap ghi chu cap nhat (Nhan Enter de dung mac dinh): "
+if "%COMMIT_MSG%"=="" set COMMIT_MSG=Cap nhat VH Sports: %date% %time%
 
 "%GIT_EXE%" commit -m "%COMMIT_MSG%"
 
@@ -35,15 +35,21 @@ echo [*] Dang day code len GitHub: baoduong139/vh-sports...
 
 if %ERRORLEVEL% equ 0 (
     echo.
-    echo [✓] THANH CONG! Code da duoc day len: https://github.com/baoduong139/vh-sports
+    echo ================================================================
+    echo  [✓] THANH CONG! Toan bo ma nguon da duoc dong bo len:
+    echo      👉 https://github.com/baoduong139/vh-sports
+    echo ================================================================
 ) else (
     echo.
-    echo [!] Neu bao "Repository not found", ban can tao repo moi tai:
-    echo     👉 https://github.com/new voi ten la: vh-sports
-    echo.
-    echo Sau khi tao xong repo tren web, hay chay lai file nay!
+    echo ----------------------------------------------------------------
+    echo  [!] Thong bao: Neu tren GitHub chua co repo nay, ban chi can:
+    echo      1. Mo trinh duyet vao: https://github.com/new
+    echo      2. Dat ten Repository name la: vh-sports (chon Public hoac Private)
+    echo      3. KHONG tich chon Add README, .gitignore
+    echo      4. Bam nut xanh "Create repository"
+    echo      5. Chay lai file push.bat nay la code tu dong len 100%!
+    echo ----------------------------------------------------------------
 )
 
 echo.
-echo ================================================================
 pause
