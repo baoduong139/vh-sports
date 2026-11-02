@@ -106,6 +106,14 @@
       h('path', { d: 'M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9' }),
       h('path', { d: 'M13.73 21a2 2 0 0 1-3.46 0' })
     ),
+    Home: (p) => h(IconBase, p,
+      h('path', { d: 'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z' }),
+      h('polyline', { points: '9 22 9 12 15 12 15 22' })
+    ),
+    User: (p) => h(IconBase, p,
+      h('path', { d: 'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2' }),
+      h('circle', { cx: '12', cy: '7', r: '4' })
+    ),
     ShoppingCart: (p) => h(IconBase, p,
       h('circle', { cx: '9', cy: '21', r: '1' }),
       h('circle', { cx: '20', cy: '21', r: '1' }),

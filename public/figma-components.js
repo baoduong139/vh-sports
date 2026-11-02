@@ -1186,8 +1186,8 @@
         h('div', { className: 'w-full flex justify-center py-2' },
           h('div', {
             className: deviceMode === 'mobile'
-              ? 'w-[393px] min-h-[852px] bg-white rounded-[44px] shadow-2xl border-4 border-slate-800 overflow-hidden relative ring-1 ring-slate-900/10'
-              : 'w-full max-w-4xl bg-white md:rounded-3xl md:shadow-md md:border md:border-slate-200/80 overflow-hidden relative min-h-[640px]'
+              ? 'w-full max-w-[393px] h-[852px] max-h-[92vh] md:max-h-[852px] md:h-[852px] flex flex-col bg-white rounded-[40px] md:rounded-[44px] shadow-2xl border-4 border-slate-800 overflow-hidden relative ring-1 ring-slate-900/10'
+              : 'w-full max-w-4xl h-[852px] max-h-[88vh] flex flex-col bg-white md:rounded-3xl md:shadow-md md:border md:border-slate-200/80 overflow-hidden relative'
           },
             h(Component, {
               ctx,

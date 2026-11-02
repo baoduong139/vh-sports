@@ -68,41 +68,249 @@
     );
   }
 
-  // Frosted Bottom Navigation
-  function FrostedBottomNav({ activeTab, onNavigate, cartCount }) {
+  // Frosted Bottom Navigation (Always Visible at bottom of mobile frame)
+  function FrostedBottomNav({ activeTab, onNavigate, cartCount = 0, ctx }) {
+    const [showLiveStream, setShowLiveStream] = useState(false);
+    const [likeCount, setLikeCount] = useState(1240);
+    const [hasFollowed, setHasFollowed] = useState(false);
+
+    const navItems = [
+      {
+        id: 1,
+        label: 'Trang chủ',
+        icon: I.Home || I.ShoppingBag,
+        badge: null
+      },
+      {
+        id: 2,
+        label: 'Danh mục',
+        icon: I.Layers,
+        badge: null
+      },
+      {
+        id: 'live',
+        label: 'Live Video',
+        icon: I.Play,
+        isLive: true,
+        badge: 'LIVE'
+      },
+      {
+        id: 3,
+        label: 'Giỏ hàng',
+        icon: I.ShoppingCart,
+        badge: cartCount > 0 ? cartCount : null
+      },
+      {
+        id: 7,
+        label: 'Tài khoản',
+        icon: I.User || I.CreditCard,
+        badge: 'VIP'
+      }
+    ];
+
     return h('div', {
-      className: 'md:hidden fixed md:static bottom-0 inset-x-0 bg-white/95 backdrop-blur-md border-t border-slate-200/80 px-3 py-1.5 flex justify-around items-center select-none z-20'
+      className: 'sticky bottom-0 inset-x-0 w-full bg-white/95 backdrop-blur-md border-t border-slate-200/90 pt-1.5 pb-2 px-2 z-40 shadow-lg shrink-0 select-none'
     },
-      h('button', {
-        onClick: () => onNavigate(1),
-        className: `flex flex-col items-center py-0.5 ${activeTab === 1 ? 'text-blue-600 font-bold' : 'text-slate-400 hover:text-slate-600'}`
-      },
-        h(I.ShoppingBag, { size: 19 }),
-        h('span', { className: 'text-[10px] mt-0.5' }, 'Trang chủ')
+      // 5 Nav Tabs
+      h('div', { className: 'flex justify-around items-center' },
+        navItems.map(item => {
+          const isActive = activeTab === item.id || (item.id === 'live' && showLiveStream);
+          return h('button', {
+            key: item.id,
+            onClick: () => {
+              if (item.id === 'live') {
+                setShowLiveStream(true);
+              } else {
+                onNavigate(item.id);
+              }
+            },
+            className: `relative flex flex-col items-center py-0.5 px-2 rounded-xl transition-all cursor-pointer group active:scale-95 ${
+              isActive
+                ? 'text-[#FF6600]'
+                : 'text-slate-400 hover:text-slate-600'
+            }`
+          },
+            // Icon container with Badge
+            h('div', { className: 'relative' },
+              item.isLive ? h('div', {
+                className: `w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-transform group-hover:scale-105 ${
+                  isActive
+                    ? 'bg-gradient-to-tr from-red-600 via-rose-500 to-orange-500 text-white ring-2 ring-red-400'
+                    : 'bg-gradient-to-tr from-red-500 to-orange-500 text-white shadow-red-500/30'
+                }`
+              },
+                h(item.icon, { size: 13, fill: 'currentColor' })
+              ) : h(item.icon, {
+                size: 21,
+                className: `transition-transform group-hover:scale-110 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`
+              }),
+
+              // Badge Count or LIVE pulse
+              item.badge && !item.isLive && h('span', {
+                className: `absolute -top-1 -right-2 text-[9px] font-black min-w-4 h-4 px-1 rounded-full flex items-center justify-center shadow-xs animate-bounce ${
+                  item.badge === 'VIP' ? 'bg-amber-400 text-slate-900 font-extrabold' : 'bg-red-500 text-white'
+                }`
+              }, item.badge),
+
+              item.isLive && h('span', {
+                className: 'absolute -top-1.5 -right-2.5 bg-red-600 text-white text-[8px] font-black px-1.5 py-0.2 rounded-full animate-pulse tracking-tighter shadow-xs'
+              }, 'LIVE')
+            ),
+
+            // Label
+            h('span', {
+              className: `text-[10px] mt-0.5 tracking-tight transition-colors ${
+                isActive ? 'font-extrabold text-[#FF6600]' : 'font-semibold text-slate-500'
+              }`
+            }, item.label),
+
+            // Active indicator bar
+            isActive && h('div', { className: 'w-4 h-0.5 bg-[#FF6600] rounded-full mt-0.5' })
+          );
+        })
       ),
-      h('button', {
-        onClick: () => onNavigate(2),
-        className: `flex flex-col items-center py-0.5 ${activeTab === 2 ? 'text-blue-600 font-bold' : 'text-slate-400 hover:text-slate-600'}`
+
+      // iOS Home Indicator bar
+      h('div', { className: 'w-28 h-1 bg-slate-300 rounded-full mx-auto mt-1.5 opacity-60' }),
+
+      // Interactive TikTok Shop Live Stream Modal
+      showLiveStream && h('div', {
+        className: 'fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 animate-fadeIn'
       },
-        h(I.Layers, { size: 19 }),
-        h('span', { className: 'text-[10px] mt-0.5' }, 'Danh mục')
-      ),
-      h('button', {
-        onClick: () => onNavigate(3),
-        className: `relative flex flex-col items-center py-0.5 ${activeTab === 3 ? 'text-orange-500 font-bold' : 'text-slate-400 hover:text-orange-500'}`
-      },
-        h(I.ShoppingCart, { size: 19 }),
-        cartCount > 0 && h('span', {
-          className: 'absolute -top-1 -right-2 bg-red-500 text-white text-[9px] font-black min-w-4 h-4 px-1 rounded-full flex items-center justify-center shadow-xs animate-bounce'
-        }, cartCount),
-        h('span', { className: 'text-[10px] mt-0.5' }, 'Giỏ hàng')
-      ),
-      h('button', {
-        onClick: () => onNavigate(7),
-        className: `flex flex-col items-center py-0.5 ${activeTab === 7 ? 'text-blue-600 font-bold' : 'text-slate-400 hover:text-slate-600'}`
-      },
-        h(I.CreditCard, { size: 19 }),
-        h('span', { className: 'text-[10px] mt-0.5' }, 'Tài khoản')
+        h('div', {
+          className: 'relative w-full max-w-[393px] h-[780px] max-h-[95vh] rounded-[36px] overflow-hidden bg-slate-950 text-white flex flex-col justify-between shadow-2xl border border-slate-700'
+        },
+          // Background Livestream Simulation Image
+          h('img', {
+            src: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=900&auto=format&fit=crop&q=80',
+            alt: 'Live Stream Host',
+            className: 'absolute inset-0 w-full h-full object-cover opacity-60 filter contrast-125'
+          }),
+          h('div', { className: 'absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-black/90 pointer-events-none' }),
+
+          // Top Stream Header
+          h('div', { className: 'relative z-10 p-3 pt-5 flex items-center justify-between' },
+            // Host Info
+            h('div', { className: 'flex items-center space-x-2 bg-black/50 backdrop-blur-md p-1.5 pr-3 rounded-full border border-white/20' },
+              h('div', { className: 'w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-orange-500 flex items-center justify-center font-black text-xs text-white' }, 'VH'),
+              h('div', null,
+                h('div', { className: 'flex items-center space-x-1.5' },
+                  h('span', { className: 'font-bold text-xs leading-none' }, 'VH Sports Official'),
+                  h('span', { className: 'bg-red-600 text-[8px] font-black px-1 rounded uppercase animate-pulse' }, 'LIVE')
+                ),
+                h('div', { className: 'text-[10px] text-slate-300' }, '14.8k mắt xem • Top 1 Thể Thao')
+              ),
+              h('button', {
+                onClick: () => {
+                  setHasFollowed(!hasFollowed);
+                  if (ctx && ctx.showToast) ctx.showToast(hasFollowed ? 'Đã hủy theo dõi' : 'Đã theo dõi VH Sports Mall!');
+                },
+                className: `text-[10px] font-bold px-2 py-1 rounded-full transition-all ${
+                  hasFollowed ? 'bg-white/20 text-white' : 'bg-red-500 hover:bg-red-600 text-white'
+                }`
+              }, hasFollowed ? 'Đang theo' : '+ Theo dõi')
+            ),
+
+            // Close button
+            h('button', {
+              onClick: () => setShowLiveStream(false),
+              className: 'w-8 h-8 rounded-full bg-black/60 hover:bg-white/20 text-white flex items-center justify-center backdrop-blur-md transition-colors'
+            }, h(I.X, { size: 16 }))
+          ),
+
+          // Middle: Live Comments Ticker
+          h('div', { className: 'relative z-10 p-3 max-h-56 overflow-hidden space-y-1.5 text-xs' },
+            [
+              { user: 'Nguyễn Văn Dương', badge: 'VIP Diamond', text: 'Áo đấu Real Madrid 2026 size L còn hàng không shop?', color: 'text-amber-400' },
+              { user: 'Minh Tuấn (Hà Nội)', text: 'Đã nhận giày Vapor 16 đinh TF hôm qua, da êm bám sân tốt lắm!', color: 'text-blue-400' },
+              { user: 'Hồng Ánh', text: 'Có voucher freeship 0đ không shop ơi?', color: 'text-emerald-400' },
+              { user: 'VH Sports (Host)', text: '🔥 Đang ghim giày đá banh sale sốc 25% kèm quà tặng tất dệt kim nhé cả nhà!', color: 'text-[#FF6600]' }
+            ].map((cmt, idx) => h('div', {
+              key: idx,
+              className: 'bg-black/45 backdrop-blur-xs px-2.5 py-1 rounded-xl max-w-[85%] border border-white/10'
+            },
+              h('span', { className: `font-bold ${cmt.color} mr-1` }, cmt.user + ':'),
+              h('span', { className: 'text-slate-100' }, cmt.text)
+            ))
+          ),
+
+          // Bottom: Pinned Product Card & Live Controls
+          h('div', { className: 'relative z-10 p-3 pb-6 space-y-2' },
+            // Pinned Card #1
+            h('div', {
+              className: 'bg-white/95 text-slate-900 rounded-2xl p-2.5 flex items-center space-x-2.5 shadow-xl border border-white/50 backdrop-blur-md'
+            },
+              h('div', { className: 'relative shrink-0' },
+                h('img', {
+                  src: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=150&auto=format&fit=crop&q=80',
+                  alt: 'Ghim Sản Phẩm',
+                  className: 'w-14 h-14 rounded-xl object-cover border border-slate-200'
+                }),
+                h('span', { className: 'absolute -top-1 -left-1 bg-amber-400 text-slate-950 text-[9px] font-black px-1 rounded' }, 'Ghim #1')
+              ),
+              h('div', { className: 'flex-1 min-w-0' },
+                h('div', { className: 'text-[11px] font-extrabold line-clamp-1' }, 'Giày Đá Banh Nike ZoomX Vapor 16 TF'),
+                h('div', { className: 'flex items-baseline space-x-1.5' },
+                  h('span', { className: 'text-sm font-black text-[#FF6600]' }, '2.450.000₫'),
+                  h('span', { className: 'text-[10px] text-slate-400 line-through' }, '3.200.000₫'),
+                  h('span', { className: 'text-[9px] bg-red-100 text-red-600 font-bold px-1 rounded' }, '-24%')
+                )
+              ),
+              h('button', {
+                onClick: () => {
+                  if (ctx && ctx.addToCart) {
+                    ctx.addToCart({
+                      id: 'live_prod_1',
+                      name: 'Giày Đá Banh Nike ZoomX Vapor 16 TF (Live)',
+                      price: 2450000,
+                      originalPrice: 3200000,
+                      image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500&auto=format&fit=crop&q=80',
+                      size: '41',
+                      quantity: 1,
+                      selected: true
+                    });
+                  }
+                  if (window.confetti) window.confetti({ particleCount: 50, spread: 50 });
+                  setShowLiveStream(false);
+                  onNavigate(3);
+                },
+                className: 'px-3 py-2 bg-gradient-to-r from-amber-500 to-[#FF6600] text-white font-black text-xs rounded-xl shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer whitespace-nowrap'
+              }, 'Mua Ngay')
+            ),
+
+            // Live Action Buttons
+            h('div', { className: 'flex items-center space-x-2' },
+              h('div', { className: 'flex-1 bg-black/50 backdrop-blur-md px-3 py-2 rounded-full border border-white/20 text-xs text-slate-400 flex items-center space-x-1.5' },
+                h('span', null, '💬'),
+                h('input', {
+                  type: 'text',
+                  placeholder: 'Bình luận hoặc hỏi size với shop...',
+                  className: 'bg-transparent outline-none text-white w-full text-xs placeholder:text-slate-400'
+                })
+              ),
+              h('button', {
+                onClick: () => {
+                  setLikeCount(c => c + 1);
+                  if (ctx && ctx.showToast) ctx.showToast('❤️ Đã thả tim cho Livestream!');
+                },
+                className: 'w-10 h-10 rounded-full bg-red-500/80 hover:bg-red-500 text-white flex items-center justify-center backdrop-blur-md transition-all active:scale-90 relative'
+              },
+                h('span', { className: 'text-base' }, '❤️'),
+                h('span', { className: 'absolute -top-1 -right-1 bg-black text-[8px] font-bold px-1 rounded-full' }, likeCount)
+              ),
+              h('button', {
+                onClick: () => {
+                  setShowLiveStream(false);
+                  onNavigate(3);
+                },
+                className: 'w-10 h-10 rounded-full bg-amber-400 hover:bg-amber-500 text-slate-950 flex items-center justify-center font-black transition-all active:scale-90 relative'
+              },
+                h(I.ShoppingCart, { size: 16 }),
+                cartCount > 0 && h('span', { className: 'absolute -top-1 -right-1 bg-red-600 text-white text-[8px] font-black w-4 h-4 rounded-full flex items-center justify-center' }, cartCount)
+              )
+            )
+          )
+        )
       )
     );
   }
@@ -770,7 +978,7 @@
       }),
 
       // Frosted Bottom Nav
-      h(FrostedBottomNav, { activeTab: 1, onNavigate, cartCount: ctx.cartCount })
+      h(FrostedBottomNav, { activeTab: 1, onNavigate, cartCount: ctx.cartCount, ctx })
     );
   }
 // ==========================================
@@ -941,7 +1149,7 @@
       }),
 
       // Frosted Bottom Nav
-      h(FrostedBottomNav, { activeTab: 2, onNavigate, cartCount: ctx.cartCount })
+      h(FrostedBottomNav, { activeTab: 2, onNavigate, cartCount: ctx.cartCount, ctx })
     );
   }
 
@@ -1747,7 +1955,7 @@
     const addrList = ctx.addresses || window.VH_DATA.initialAddresses || [];
     const savedCards = ctx.savedMethods || window.VH_DATA.savedMethods || [];
 
-    return h('div', { className: 'w-full min-h-[640px] flex flex-col bg-slate-50 text-slate-800 relative' },
+    return h('div', { className: 'w-full h-full flex flex-col bg-slate-50 text-slate-800 overflow-hidden relative' },
       h(MobileStatusBar, null),
 
       // Header Bar (Back to Home, Title, Cart Preview)
@@ -2107,7 +2315,7 @@
       ),
 
       // Mobile Bottom Nav
-      h(FrostedBottomNav, { activeTab: 7, onNavigate, cartCount: ctx.cartCount })
+      h(FrostedBottomNav, { activeTab: 7, onNavigate, cartCount: ctx.cartCount, ctx })
     );
   }
 // ==========================================
