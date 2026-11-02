@@ -794,13 +794,35 @@
     onOpenPwa
   }) {
     const [searchVal, setSearchVal] = useState('');
+    const [activeCategory, setActiveCategory] = useState('all');
+    const [deviceMode, setDeviceMode] = useState('desktop'); // 'desktop' | 'mobile'
+    const [selectedProdForSize, setSelectedProdForSize] = useState(null);
+    const [showVietQRModal, setShowVietQRModal] = useState(false);
+
     const currentArtboard = window.VH_ARTBOARDS.find(a => a.id === currentScreenId) || window.VH_ARTBOARDS[0];
     const Component = currentArtboard.component;
 
+    // Filter products for desktop store
+    const allProducts = (window.VH_DATA && window.VH_DATA.products) || [];
+    const desktopFilteredProducts = allProducts.filter(p => {
+      const matchSearch = !searchVal || p.name.toLowerCase().includes(searchVal.toLowerCase());
+      const matchCat = activeCategory === 'all' || p.category === activeCategory;
+      return matchSearch && matchCat;
+    });
+
+    const categories = [
+      { id: 'all', name: '🔥 Tất Cả Sản Phẩm' },
+      { id: 'football', name: '⚽ Giày Đá Bóng' },
+      { id: 'badminton', name: '🏸 Vợt Cầu Lông' },
+      { id: 'apparel', name: '👕 Áo Đấu CLB' },
+      { id: 'running', name: '🏃 Giày Chạy Bộ' },
+      { id: 'accessories', name: '🩹 Phụ Kiện Thể Thao' }
+    ];
+
     return h('div', { className: 'w-full min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col font-sans overflow-x-hidden' },
       // 1. Top Announcement Bar
-      h('div', { className: 'bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 text-white text-[11px] font-bold py-1.5 px-4 tracking-wide flex items-center justify-between shadow-2xs' },
-        h('span', { className: 'hidden md:inline' }, '🔥 MÙA GIẢI 2026: GIẢM ĐẾN 44% CHO ĐỒ ĐÁ BANH & CẦU LÔNG'),
+      h('div', { className: 'bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 text-white text-[11px] font-bold py-1.5 px-4 tracking-wide flex items-center justify-between shadow-2xs z-30' },
+        h('span', { className: 'hidden md:inline font-extrabold' }, '🔥 MÙA GIẢI 2026: GIẢM ĐẾN 44% CHO ĐỒ ĐÁ BANH & CẦU LÔNG'),
         h('div', { className: 'mx-auto flex items-center space-x-2' },
           h(I.Sparkles, { size: 14, className: 'text-amber-200' }),
           h('span', null, 'MIỄN PHÍ VẬN CHUYỂN TOÀN QUỐC CHO ĐƠN TỪ 0Đ • TẶNG VOUCHER SPORT50K'),
@@ -817,13 +839,47 @@
         )
       ),
 
-      // 2. Desktop Mega-Header (Visible on md and up)
+      // 2. Mobile Header Bar (Always visible on mobile devices)
+      h('div', { className: 'flex md:hidden items-center justify-between px-3.5 py-2.5 bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs' },
+        h('div', {
+          onClick: () => setCurrentScreenId(1),
+          className: 'flex items-center space-x-2 cursor-pointer'
+        },
+          h('div', { className: 'w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-orange-500 flex items-center justify-center text-white font-black text-xs shadow-sm' }, 'VH'),
+          h('div', null,
+            h('span', { className: 'font-black text-sm text-slate-900 tracking-tight' }, 'VH SPORTS'),
+            h('span', { className: 'ml-1 text-[8px] bg-red-600 text-white font-black px-1 py-0.2 rounded uppercase' }, 'Mall')
+          )
+        ),
+        h('div', { className: 'flex items-center space-x-2' },
+          // VietQR quick trigger
+          h('button', {
+            onClick: () => setShowVietQRModal(true),
+            className: 'px-2 py-1 rounded-lg bg-blue-50 text-blue-600 text-[10px] font-bold border border-blue-200 flex items-center space-x-1'
+          },
+            h(I.QrCode, { size: 12 }),
+            h('span', null, 'VietQR')
+          ),
+          // Cart Button
+          h('button', {
+            onClick: () => setCurrentScreenId(3),
+            className: 'relative p-1.5 text-slate-700 hover:text-[#FF6600]'
+          },
+            h(I.ShoppingCart, { size: 20 }),
+            ctx.cartCount > 0 && h('span', {
+              className: 'absolute -top-1 -right-1 bg-red-500 text-white font-black text-[9px] min-w-4 h-4 px-1 rounded-full flex items-center justify-center animate-bounce shadow-xs'
+            }, ctx.cartCount)
+          )
+        )
+      ),
+
+      // 3. Desktop Mega-Header (Visible on md and up)
       h('header', { className: 'hidden md:block bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs' },
         h('div', { className: 'max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-6' },
           // Logo & Mall Tag
           h('div', {
-            onClick: () => setCurrentScreenId(1),
-            className: 'flex items-center space-x-3 cursor-pointer group'
+            onClick: () => { setCurrentScreenId(1); setDeviceMode('desktop'); },
+            className: 'flex items-center space-x-3 cursor-pointer group shrink-0'
           },
             h('div', { className: 'w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-orange-500 flex items-center justify-center text-white font-black text-base shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform' },
               'VH'
@@ -837,7 +893,7 @@
             )
           ),
 
-          // Search Bar with Auto-suggestions
+          // Search Bar with Realtime live filter
           h('div', { className: 'flex-1 max-w-xl relative' },
             h('div', { className: 'relative flex items-center' },
               h('input', {
@@ -851,7 +907,7 @@
                 onClick: () => {
                   if (searchVal) ctx.showToast(`Đang tìm sản phẩm: "${searchVal}"`);
                 },
-                className: 'absolute right-1 top-1 bottom-1 px-4 bg-[#FF6600] hover:bg-[#EA580C] text-white rounded-full text-xs font-bold flex items-center space-x-1 shadow-2xs transition-all'
+                className: 'absolute right-1 top-1 bottom-1 px-4 bg-[#FF6600] hover:bg-[#EA580C] text-white rounded-full text-xs font-bold flex items-center space-x-1 shadow-2xs transition-all cursor-pointer'
               },
                 h(I.Search, { size: 14 }),
                 h('span', null, 'Tìm')
@@ -869,7 +925,7 @@
           ),
 
           // Direct Actions & Profile
-          h('div', { className: 'flex items-center space-x-4' },
+          h('div', { className: 'flex items-center space-x-4 shrink-0' },
             // Hotline
             h('div', { className: 'hidden xl:flex items-center space-x-2 text-xs' },
               h('div', { className: 'w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center' },
@@ -881,10 +937,19 @@
               )
             ),
 
+            // VietQR Quick Transfer Modal Trigger
+            h('button', {
+              onClick: () => setShowVietQRModal(true),
+              className: 'hidden lg:flex items-center space-x-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer'
+            },
+              h(I.QrCode, { size: 15 }),
+              h('span', null, 'Mã VietQR')
+            ),
+
             // User Profile Pill (Clicks to Screen 7)
             h('button', {
               onClick: () => setCurrentScreenId(7),
-              className: 'flex items-center space-x-2 p-1.5 rounded-xl hover:bg-slate-100 transition-colors text-left'
+              className: 'flex items-center space-x-2 p-1.5 rounded-xl hover:bg-slate-100 transition-colors text-left cursor-pointer'
             },
               h('img', {
                 src: ctx.userProfile.avatar,
@@ -915,26 +980,49 @@
           )
         ),
 
-        // Secondary Navigation Tabs (Artboard Switcher bar)
+        // Device Mode & Navigation Bar
         h('nav', { className: 'bg-slate-900 text-white px-4' },
-          h('div', { className: 'max-w-7xl mx-auto flex items-center justify-between overflow-x-auto no-scrollbar py-2 text-xs font-bold' },
-            h('div', { className: 'flex items-center space-x-1' },
+          h('div', { className: 'max-w-7xl mx-auto flex items-center justify-between overflow-x-auto no-scrollbar py-2 text-xs font-bold gap-4' },
+            // Device Switcher Pills
+            h('div', { className: 'flex items-center space-x-2 bg-slate-800 p-1 rounded-xl shrink-0' },
+              h('button', {
+                onClick: () => setDeviceMode('desktop'),
+                className: `px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer ${
+                  deviceMode === 'desktop' ? 'bg-[#FF6600] text-white shadow-xs' : 'text-slate-300 hover:text-white'
+                }`
+              },
+                h('span', null, '🖥️ Web Store PC')
+              ),
+              h('button', {
+                onClick: () => setDeviceMode('mobile'),
+                className: `px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 cursor-pointer ${
+                  deviceMode === 'mobile' ? 'bg-[#FF6600] text-white shadow-xs' : 'text-slate-300 hover:text-white'
+                }`
+              },
+                h('span', null, '📱 Mobile App (iPhone)')
+              )
+            ),
+
+            // Artboards switcher
+            h('div', { className: 'flex items-center space-x-1 overflow-x-auto no-scrollbar' },
               window.VH_ARTBOARDS.map(ab => {
                 const active = currentScreenId === ab.id;
                 return h('button', {
                   key: ab.id,
                   onClick: () => setCurrentScreenId(ab.id),
-                  className: `px-3 py-1 rounded-lg transition-all flex items-center space-x-1.5 whitespace-nowrap cursor-pointer ${
+                  className: `px-2.5 py-1 rounded-lg transition-all flex items-center space-x-1 whitespace-nowrap cursor-pointer text-[11px] ${
                     active
-                      ? 'bg-[#FF6600] text-white shadow-xs'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'text-slate-400 hover:text-white hover:bg-slate-800'
                   }`
                 },
                   h('span', null, ab.name)
                 );
               })
             ),
-            h('div', { className: 'hidden lg:flex items-center space-x-3 text-[11px] text-slate-400' },
+
+            // Commitments
+            h('div', { className: 'hidden xl:flex items-center space-x-3 text-[11px] text-slate-400 shrink-0' },
               h('span', { className: 'flex items-center space-x-1 text-emerald-400' },
                 h(I.CheckCircle2, { size: 13 }),
                 h('span', null, 'Đổi trả 30 ngày')
@@ -948,29 +1036,249 @@
         )
       ),
 
-      // 3. MAIN CONTENT AREA (Responsive Desktop or Mobile Bleed)
+      // 4. MAIN CONTENT AREA
       h('main', { className: 'flex-1 max-w-7xl w-full mx-auto md:py-4 md:px-4' },
         // Breadcrumb on desktop
-        h('div', { className: 'hidden md:flex items-center space-x-2 text-xs text-slate-500 mb-3 px-1' },
-          h('span', { onClick: () => setCurrentScreenId(1), className: 'hover:text-blue-600 cursor-pointer' }, 'Trang chủ'),
-          h('span', null, '/'),
-          h('span', { className: 'font-bold text-slate-800' }, currentArtboard.name),
-          h('span', { className: 'text-[10px] text-slate-400 font-mono ml-2' }, `[${currentArtboard.subtitle}]`)
+        h('div', { className: 'hidden md:flex items-center justify-between text-xs text-slate-500 mb-3 px-1' },
+          h('div', { className: 'flex items-center space-x-2' },
+            h('span', { onClick: () => { setCurrentScreenId(1); setDeviceMode('desktop'); }, className: 'hover:text-blue-600 cursor-pointer' }, 'Trang chủ'),
+            h('span', null, '/'),
+            h('span', { className: 'font-bold text-slate-800' }, currentArtboard.name),
+            h('span', { className: 'text-[10px] text-slate-400 font-mono ml-2' }, `[${currentArtboard.subtitle}]`)
+          ),
+          h('div', { className: 'text-[11px] text-slate-500 font-medium' },
+            deviceMode === 'desktop' ? 'Đang hiển thị: Web Store PC' : 'Đang hiển thị: Khung iPhone 15 Pro (393 × 852)'
+          )
         ),
 
-        // Screen Frame
-        h('div', { className: 'w-full bg-white md:rounded-3xl md:shadow-md md:border md:border-slate-200/80 overflow-hidden relative min-h-[640px]' },
-          h(Component, {
-            ctx,
-            onNavigate: (targetId) => {
-              setCurrentScreenId(targetId);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-          })
+        // A. DESKTOP FULL-WIDTH E-COMMERCE STOREFRONT (When on Desktop Mode and Screen 1)
+        (deviceMode === 'desktop' && currentScreenId === 1) ? h('div', { className: 'space-y-6' },
+          // Hero Promotional Banner Carousel
+          h('div', {
+            className: 'w-full rounded-3xl overflow-hidden bg-gradient-to-r from-slate-900 via-blue-950 to-orange-950 text-white p-6 md:p-10 shadow-xl border border-slate-800 relative'
+          },
+            h('div', { className: 'max-w-2xl space-y-3 relative z-10' },
+              h('span', { className: 'inline-block px-3 py-1 bg-[#FF6600] text-white text-[11px] font-black rounded-full uppercase tracking-wider' }, 'Bộ Sưu Tập Mới 2026'),
+              h('h1', { className: 'text-2xl md:text-4xl font-black tracking-tight leading-tight' }, 'ĐỒ THỂ THAO CAO CẤP & CHÍNH HÃNG 100%'),
+              h('p', { className: 'text-xs md:text-sm text-slate-300 leading-relaxed' },
+                'Trải nghiệm công nghệ đệm khí ZoomX, sợi dệt Dri-Fit siêu nhẹ và khung vợt Carbon siêu bền từ các thương hiệu thể thao số 1 thế giới.'
+              ),
+              h('div', { className: 'flex items-center space-x-3 pt-2' },
+                h('button', {
+                  onClick: () => {
+                    const el = document.getElementById('desktop-products-grid');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  },
+                  className: 'px-5 py-2.5 bg-[#FF6600] hover:bg-[#EA580C] text-white font-bold text-xs rounded-xl shadow-lg shadow-orange-500/30 flex items-center space-x-2 transition-all cursor-pointer'
+                },
+                  h(I.ShoppingBag, { size: 15 }),
+                  h('span', null, 'Mua Ngay Hôm Nay')
+                ),
+                h('button', {
+                  onClick: () => setShowVietQRModal(true),
+                  className: 'px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold text-xs rounded-xl backdrop-blur-md border border-white/20 transition-all cursor-pointer'
+                }, 'Mã VietQR Thanh Toán')
+              )
+            ),
+            // Background sport graphic elements
+            h('div', { className: 'absolute right-6 top-6 bottom-6 w-1/3 hidden lg:flex items-center justify-center opacity-30 pointer-events-none' },
+              h('div', { className: 'text-9xl font-black text-white/20 select-none' }, 'VH')
+            )
+          ),
+
+          // 4 Trust Pillars
+          h('div', { className: 'grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4' },
+            [
+              { icon: I.Truck, title: 'Giao Nhanh 2 Giờ', desc: 'Nội thành TP.HCM & Hà Nội' },
+              { icon: I.CheckCircle2, title: 'Đổi Hàng 30 Ngày', desc: 'Hỗ trợ đổi size tận nhà miễn phí' },
+              { icon: I.Sparkles, title: '100% Chính Hãng', desc: 'Đền tiền 200% nếu phát hiện giả' },
+              { icon: I.QrCode, title: 'VietQR / MoMo 24/7', desc: 'Thanh toán tức thì không phụ phí' }
+            ].map((item, idx) => h('div', {
+              key: idx,
+              className: 'bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs flex items-center space-x-3'
+            },
+              h('div', { className: 'w-10 h-10 rounded-xl bg-orange-50 text-[#FF6600] flex items-center justify-center shrink-0' },
+                h(item.icon, { size: 20 })
+              ),
+              h('div', null,
+                h('div', { className: 'font-extrabold text-xs text-slate-900' }, item.title),
+                h('div', { className: 'text-[10px] text-slate-500' }, item.desc)
+              )
+            ))
+          ),
+
+          // Category Filter Tabs
+          h('div', { id: 'desktop-products-grid', className: 'space-y-4' },
+            h('div', { className: 'flex flex-col md:flex-row md:items-center justify-between gap-3' },
+              h('div', null,
+                h('h2', { className: 'text-lg md:text-xl font-black text-slate-900 tracking-tight' }, 'Danh Mục Sản Phẩm Thể Thao'),
+                h('p', { className: 'text-xs text-slate-500' }, `Hiển thị ${desktopFilteredProducts.length} sản phẩm theo bộ lọc`)
+              ),
+              // Filter pills
+              h('div', { className: 'flex items-center space-x-1.5 overflow-x-auto no-scrollbar pb-1' },
+                categories.map(cat => h('button', {
+                  key: cat.id,
+                  onClick: () => setActiveCategory(cat.id),
+                  className: `px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
+                    activeCategory === cat.id
+                      ? 'bg-[#FF6600] text-white shadow-xs'
+                      : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+                  }`
+                }, cat.name))
+              )
+            ),
+
+            // Product Grid 4 columns (Wide, Generous Padding, No Vertical Clipped Buttons)
+            h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5' },
+              desktopFilteredProducts.map(prod => h('div', {
+                key: prod.id,
+                className: 'bg-white rounded-2xl border border-slate-200/90 p-3.5 shadow-2xs hover:shadow-lg transition-all flex flex-col justify-between group'
+              },
+                h('div', null,
+                  // Image
+                  h('div', { className: 'relative w-full aspect-square rounded-xl overflow-hidden mb-3 bg-slate-100 group' },
+                    h('img', {
+                      src: prod.image,
+                      alt: prod.name,
+                      className: 'w-full h-full object-cover group-hover:scale-105 transition-transform duration-300'
+                    }),
+                    h('span', { className: 'absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-black bg-[#FF6600] text-white shadow-sm' }, prod.discount),
+                    prod.qualityTag && h('span', { className: 'absolute top-2 left-2 bg-slate-900/85 text-white text-[9px] font-bold px-2 py-0.5 rounded-md shadow-sm' }, prod.qualityTag)
+                  ),
+                  // Rating & sold
+                  h('div', { className: 'flex items-center space-x-1 mb-1.5 text-xs text-slate-500' },
+                    h(I.Star, { size: 13, className: 'text-amber-400', fill: '#f59e0b' }),
+                    h('span', { className: 'font-bold text-slate-800' }, prod.rating),
+                    h('span', { className: 'text-slate-400 text-[11px]' }, `(${prod.sold} đã bán)`)
+                  ),
+                  // Title
+                  h('h3', { className: 'font-bold text-xs md:text-sm text-slate-900 line-clamp-2 leading-snug mb-2 h-10' }, prod.name),
+                  // Price
+                  h('div', { className: 'mb-3 flex items-baseline space-x-2' },
+                    h('span', { className: 'font-black text-sm md:text-base text-[#FF6600] whitespace-nowrap' }, window.formatVND(prod.price)),
+                    h('span', { className: 'text-[11px] text-slate-400 line-through whitespace-nowrap' }, window.formatVND(prod.originalPrice))
+                  )
+                ),
+                // Action Buttons
+                h('div', { className: 'space-y-1.5' },
+                  h('button', {
+                    onClick: () => setSelectedProdForSize(prod),
+                    className: 'w-full h-9 rounded-full bg-[#FF6600] hover:bg-[#EA580C] active:scale-95 text-white font-bold text-xs flex items-center justify-center space-x-1.5 shadow-sm transition-all cursor-pointer'
+                  },
+                    h(I.ShoppingBag, { size: 14 }),
+                    h('span', null, 'Chọn Size & Thêm Giỏ')
+                  ),
+                  h('button', {
+                    onClick: () => {
+                      ctx.addToCart({ ...prod, size: prod.defaultSize || '41' });
+                    },
+                    className: 'w-full h-8 rounded-full bg-orange-50 hover:bg-orange-100 text-[#FF6600] font-bold text-[11px] flex items-center justify-center space-x-1 transition-all cursor-pointer'
+                  },
+                    h('span', null, `Mua nhanh (Size ${prod.defaultSize || '41'})`)
+                  )
+                )
+              ))
+            )
+          )
+        ) :
+
+        // B. MOBILE PHONE FRAME (When deviceMode === 'mobile' OR screen is not Home)
+        h('div', { className: 'w-full flex justify-center py-2' },
+          h('div', {
+            className: deviceMode === 'mobile'
+              ? 'w-[393px] min-h-[852px] bg-white rounded-[44px] shadow-2xl border-4 border-slate-800 overflow-hidden relative ring-1 ring-slate-900/10'
+              : 'w-full max-w-4xl bg-white md:rounded-3xl md:shadow-md md:border md:border-slate-200/80 overflow-hidden relative min-h-[640px]'
+          },
+            h(Component, {
+              ctx,
+              onNavigate: (targetId) => {
+                setCurrentScreenId(targetId);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            })
+          )
         )
       ),
 
-      // 4. Desktop Footer
+      // 5. Dynamic VietQR Modal (Tính năng mới thanh toán MB Bank)
+      showVietQRModal && h('div', {
+        className: 'fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fadeIn'
+      },
+        h('div', {
+          className: 'bg-white rounded-3xl max-w-md w-full p-5 shadow-2xl border border-slate-200 space-y-4'
+        },
+          h('div', { className: 'flex justify-between items-center pb-2 border-b border-slate-100' },
+            h('div', { className: 'flex items-center space-x-2' },
+              h('div', { className: 'w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold' }, 'MB'),
+              h('div', null,
+                h('h3', { className: 'font-extrabold text-sm text-slate-900' }, 'Thanh Toán VietQR 24/7'),
+                h('p', { className: 'text-[10px] text-slate-500' }, 'Ngân hàng Quân Đội (MB Bank)')
+              )
+            ),
+            h('button', {
+              onClick: () => setShowVietQRModal(false),
+              className: 'p-1 text-slate-400 hover:text-slate-600 rounded-full cursor-pointer'
+            }, h(I.X, { size: 18 }))
+          ),
+          // QR Image
+          h('div', { className: 'flex flex-col items-center justify-center p-4 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-3' },
+            h('img', {
+              src: `https://api.vietqr.io/image/970422-0988123456-compact2.png?amount=${ctx.finalTotal || 3710000}&addInfo=VHSPORTS%20DH${Math.floor(10000 + Math.random() * 90000)}&accountName=NGUYEN%20VAN%20DUONG`,
+              alt: 'Mã VietQR MB Bank',
+              className: 'w-56 h-auto rounded-xl shadow-md border border-slate-200 bg-white p-2'
+            }),
+            h('div', { className: 'text-center space-y-1' },
+              h('div', { className: 'text-xs text-slate-500' }, 'Số tiền cần thanh toán:'),
+              h('div', { className: 'text-xl font-black text-[#FF6600]' }, window.formatVND(ctx.finalTotal || 3710000))
+            )
+          ),
+          // Transfer Details
+          h('div', { className: 'bg-slate-50 rounded-xl p-3 space-y-2 text-xs border border-slate-200' },
+            h('div', { className: 'flex justify-between items-center' },
+              h('span', { className: 'text-slate-500' }, 'Số tài khoản:'),
+              h('div', { className: 'flex items-center space-x-1' },
+                h('span', { className: 'font-mono font-bold text-slate-900' }, '0988 123 456'),
+                h('button', {
+                  onClick: () => ctx.copyToClipboard('0988123456'),
+                  className: 'text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold hover:bg-blue-200 cursor-pointer'
+                }, 'Copy')
+              )
+            ),
+            h('div', { className: 'flex justify-between items-center' },
+              h('span', { className: 'text-slate-500' }, 'Chủ tài khoản:'),
+              h('span', { className: 'font-bold text-slate-900' }, 'NGUYEN VAN DUONG')
+            ),
+            h('div', { className: 'flex justify-between items-center' },
+              h('span', { className: 'text-slate-500' }, 'Nội dung:'),
+              h('span', { className: 'font-mono font-bold text-slate-800' }, 'VHSPORTS DH89241')
+            )
+          ),
+          // Confirmation button
+          h('button', {
+            onClick: () => {
+              setShowVietQRModal(false);
+              ctx.showToast('Đã xác nhận thanh toán VietQR thành công!');
+              if (window.confetti) {
+                window.confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
+              }
+              setCurrentScreenId(8);
+            },
+            className: 'w-full py-2.5 bg-[#FF6600] hover:bg-[#EA580C] text-white font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer'
+          }, 'Tôi Đã Chuyển Khoản Xong')
+        )
+      ),
+
+      // 6. Smart Size & Color Sheet for Desktop Store
+      selectedProdForSize && h(window.VHArtboards?.SmartSizeSheet || 'div', {
+        product: selectedProdForSize,
+        onClose: () => setSelectedProdForSize(null),
+        onConfirm: (item) => {
+          ctx.addToCart(item);
+          setSelectedProdForSize(null);
+        }
+      }),
+
+      // 7. Desktop Footer
       h('footer', { className: 'hidden md:block bg-white border-t border-slate-200 mt-8 pt-8 pb-6 text-xs text-slate-600' },
         h('div', { className: 'max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8 pb-8 border-b border-slate-100' },
           // Col 1

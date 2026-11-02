@@ -705,7 +705,7 @@
             ),
             h('span', { className: 'text-[11px] text-slate-400 font-medium' }, `${filtered.length} sản phẩm`)
           ),
-          h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5' },
+          h('div', { className: 'grid grid-cols-2 gap-3' },
             filtered.map(prod => h('div', {
               key: prod.id,
               className: 'bg-white rounded-2xl border border-slate-200/70 p-2.5 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between'
@@ -735,24 +735,24 @@
                   h('span', { className: 'font-bold text-slate-700' }, prod.rating),
                   h('span', null, `(${prod.sold} đã bán)`)
                 ),
-                // Title
-                h('h4', { className: 'font-bold text-xs text-slate-800 line-clamp-2 leading-snug mb-1' }, prod.name),
-                // Price
-                h('div', { className: 'mb-2' },
-                  h('div', { className: 'font-black text-xs text-[#FF6600]' }, window.formatVND(prod.price)),
-                  h('div', { className: 'text-[9px] text-slate-400 line-through' }, window.formatVND(prod.originalPrice))
+                // Title (2 dòng chuẩn)
+                h('h4', { className: 'font-bold text-xs text-slate-800 line-clamp-2 leading-snug mb-1.5 h-8' }, prod.name),
+                // Price (1 dòng duy nhất, không bị rớt chữ đ xuống dòng)
+                h('div', { className: 'mb-2.5 flex items-baseline space-x-1.5 flex-wrap' },
+                  h('span', { className: 'font-black text-xs sm:text-sm text-[#FF6600] whitespace-nowrap' }, window.formatVND(prod.price)),
+                  h('span', { className: 'text-[9px] text-slate-400 line-through whitespace-nowrap' }, window.formatVND(prod.originalPrice))
                 )
               ),
-              // Nút ngang thanh mảnh dạng viên thuốc (Pill Button h-8)
+              // Nút ngang dạng viên thuốc (Pill Button h-8)
               h('button', {
                 onClick: (e) => {
                   e.stopPropagation();
                   setSelectedProductForSize(prod);
                 },
-                className: 'w-full h-8 rounded-full bg-[#FF6600] hover:bg-[#EA580C] active:scale-95 text-white font-semibold text-xs flex items-center justify-center space-x-1.5 shadow-sm transition-all'
+                className: 'w-full h-8 px-2 rounded-full bg-[#FF6600] hover:bg-[#EA580C] active:scale-95 text-white font-bold text-[11px] flex items-center justify-center space-x-1 shadow-xs transition-all cursor-pointer'
               },
-                h(I.ShoppingBag, { size: 13 }),
-                h('span', null, 'Thêm vào giỏ')
+                h(I.ShoppingBag, { size: 13, className: 'shrink-0' }),
+                h('span', { className: 'truncate leading-none' }, 'Thêm vào giỏ')
               )
             ))
           )
@@ -1775,166 +1775,152 @@
         )
       ),
 
-      // Mobile Navigation Pills (Tabs toggle on mobile; acts as quick filter on desktop)
-      h('div', { className: 'px-4 py-2 bg-white border-b border-slate-200 flex space-x-2 shrink-0 md:hidden' },
-        h('button', {
-          onClick: () => setActiveSection('profile'),
-          className: `flex-1 py-1.5 rounded-xl text-xs font-bold transition-all ${
-            activeSection === 'profile' ? 'bg-[#FF6600] text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+      // Navigation Pills (Tabs toggle: Tất cả, Hồ sơ, Sổ địa chỉ, Đơn hàng, Thẻ)
+      h('div', { className: 'px-3 py-2 bg-white border-b border-slate-200 flex space-x-1.5 shrink-0 overflow-x-auto no-scrollbar z-10' },
+        [
+          { id: 'all', label: '⭐ Tất cả' },
+          { id: 'profile', label: '👤 Hồ sơ VIP' },
+          { id: 'addresses', label: `📍 Địa chỉ (${addrList.length})` },
+          { id: 'orders', label: `📦 Đơn hàng (${orderHist.length})` },
+          { id: 'cards', label: '💳 Thẻ & Ví' }
+        ].map(tab => h('button', {
+          key: tab.id,
+          onClick: () => setActiveSection(tab.id),
+          className: `px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap shrink-0 cursor-pointer ${
+            activeSection === tab.id
+              ? 'bg-[#FF6600] text-white shadow-xs'
+              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
           }`
-        }, '👤 Cá nhân'),
-        h('button', {
-          onClick: () => setActiveSection('addresses'),
-          className: `flex-1 py-1.5 rounded-xl text-xs font-bold transition-all ${
-            activeSection === 'addresses' ? 'bg-[#FF6600] text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-          }`
-        }, '📍 Sổ địa chỉ'),
-        h('button', {
-          onClick: () => setActiveSection('cards'),
-          className: `flex-1 py-1.5 rounded-xl text-xs font-bold transition-all ${
-            activeSection === 'cards' ? 'bg-[#FF6600] text-white shadow-xs' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-          }`
-        }, '💳 Thẻ & Ví')
+        }, tab.label))
       ),
 
-      // Main Content Grid (Responsive: 1 col on mobile, 2 cols on Desktop)
-      h('div', { className: 'flex-1 p-3 md:p-6 overflow-y-auto pb-24 md:pb-8 custom-scrollbar' },
-        h('div', { className: 'max-w-6xl mx-auto md:grid md:grid-cols-12 md:gap-6 space-y-4 md:space-y-0' },
+      // Main Content Single Column (Full Width, No Cramping)
+      h('div', { className: 'flex-1 p-3.5 overflow-y-auto pb-24 custom-scrollbar' },
+        h('div', { className: 'w-full max-w-xl mx-auto space-y-3.5' },
 
-          // LEFT COLUMN: PROFILE CARD & RECENT ORDERS
-          h('div', {
-            className: `md:col-span-5 space-y-4 ${
-              activeSection === 'profile' ? 'block' : 'hidden md:block'
-            }`
+          // 1. VIP Profile Header Card
+          (activeSection === 'all' || activeSection === 'profile') && h('div', {
+            className: 'bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs relative overflow-hidden'
           },
-            // 1. VIP Profile Header Card
-            h('div', { className: 'bg-white rounded-2xl border border-slate-200/90 p-4 md:p-5 shadow-xs relative overflow-hidden' },
-              h('div', { className: 'flex items-center space-x-3.5 relative z-1' },
-                h('div', { className: 'relative' },
-                  h('img', {
-                    src: userProf.avatar,
-                    alt: userProf.name,
-                    className: 'w-16 h-16 rounded-2xl object-cover border-2 border-[#FF6600] shadow-sm'
-                  }),
-                  h('span', { className: 'absolute -bottom-1 -right-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[9px] font-black px-1.5 py-0.2 rounded-full shadow-xs' }, 'VIP')
-                ),
-                h('div', { className: 'flex-1 min-w-0' },
-                  h('div', { className: 'flex items-center space-x-1.5' },
-                    h('h3', { className: 'font-extrabold text-sm md:text-base text-slate-900 truncate' }, userProf.name),
-                    h('span', { className: 'text-[10px] font-black bg-orange-100 text-[#FF6600] px-1.5 py-0.2 rounded-md' }, userProf.tier)
-                  ),
-                  h('p', { className: 'text-xs text-slate-500 mt-0.5' }, userProf.phone),
-                  h('p', { className: 'text-[11px] text-slate-400 truncate' }, userProf.email),
-                  h('div', { className: 'flex items-center space-x-2 mt-2 text-[11px]' },
-                    h('span', { className: 'text-[#FF6600] font-black' }, `🏆 ${userProf.points} Xu`),
-                    h('span', { className: 'text-slate-300' }, '•'),
-                    h('span', { className: 'text-slate-400' }, `Thành viên từ ${userProf.memberSince}`)
-                  )
-                )
+            h('div', { className: 'flex items-center space-x-3 relative z-1' },
+              h('div', { className: 'relative shrink-0' },
+                h('img', {
+                  src: userProf.avatar,
+                  alt: userProf.name,
+                  className: 'w-14 h-14 rounded-2xl object-cover border-2 border-[#FF6600] shadow-sm'
+                }),
+                h('span', { className: 'absolute -bottom-1 -right-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[9px] font-black px-1.5 py-0.2 rounded-full shadow-xs' }, 'VIP')
               ),
-              h('div', { className: 'mt-3.5 pt-3 border-t border-slate-100 grid grid-cols-3 gap-2 text-center text-xs' },
-                h('div', { className: 'bg-slate-50 p-2 rounded-xl' },
-                  h('div', { className: 'text-[10px] text-slate-400 font-medium' }, 'Đơn đã mua'),
-                  h('div', { className: 'font-black text-slate-800 text-sm mt-0.5' }, '14')
+              h('div', { className: 'flex-1 min-w-0' },
+                h('div', { className: 'flex items-center space-x-1.5 flex-wrap gap-y-0.5' },
+                  h('h3', { className: 'font-extrabold text-sm text-slate-900 truncate' }, userProf.name),
+                  h('span', { className: 'text-[10px] font-black bg-orange-100 text-[#FF6600] px-2 py-0.5 rounded-md whitespace-nowrap' }, userProf.tier)
                 ),
-                h('div', { className: 'bg-slate-50 p-2 rounded-xl' },
-                  h('div', { className: 'text-[10px] text-slate-400 font-medium' }, 'Voucher có'),
-                  h('div', { className: 'font-black text-[#FF6600] text-sm mt-0.5' }, '4 mã')
-                ),
-                h('div', { className: 'bg-slate-50 p-2 rounded-xl' },
-                  h('div', { className: 'text-[10px] text-slate-400 font-medium' }, 'Hạng VIP'),
-                  h('div', { className: 'font-black text-blue-600 text-sm mt-0.5' }, 'Kim Cương')
+                h('p', { className: 'text-xs text-slate-600 mt-0.5 font-medium' }, userProf.phone),
+                h('p', { className: 'text-[11px] text-slate-400 truncate' }, userProf.email),
+                h('div', { className: 'flex items-center space-x-2 mt-1.5 text-[11px]' },
+                  h('span', { className: 'text-[#FF6600] font-black' }, `🏆 ${userProf.points} Xu`),
+                  h('span', { className: 'text-slate-300' }, '•'),
+                  h('span', { className: 'text-slate-400 truncate' }, `Thành viên từ ${userProf.memberSince}`)
                 )
               )
             ),
-
-            // 2. Recent Orders History Card
-            h('div', { className: 'bg-white rounded-2xl border border-slate-200/90 p-4 md:p-5 shadow-xs space-y-3' },
-              h('div', { className: 'flex items-center justify-between' },
-                h('h4', { className: 'font-extrabold text-xs md:text-sm text-slate-900 uppercase tracking-wider flex items-center space-x-1.5' },
-                  h(I.Truck, { size: 15, className: 'text-[#FF6600]' }),
-                  h('span', null, 'Lịch Sử Đơn Hàng Gần Đây')
-                ),
-                h('span', { className: 'text-[10px] text-blue-600 font-bold cursor-pointer hover:underline' }, 'Xem tất cả')
+            h('div', { className: 'mt-3 pt-3 border-t border-slate-100 grid grid-cols-3 gap-2 text-center text-xs' },
+              h('div', { className: 'bg-slate-50 p-2 rounded-xl' },
+                h('div', { className: 'text-[10px] text-slate-400 font-medium' }, 'Đơn đã mua'),
+                h('div', { className: 'font-black text-slate-800 text-sm mt-0.5' }, '14')
               ),
-              orderHist.length === 0 ? h('div', { className: 'text-center py-6 text-xs text-slate-400' }, 'Chưa có đơn hàng nào') :
-              h('div', { className: 'space-y-2' },
-                orderHist.map(ord => h('div', {
-                  key: ord.id,
-                  className: 'p-3 rounded-xl border border-slate-100 bg-slate-50 hover:bg-slate-100/70 transition-all flex items-center justify-between text-xs space-x-2'
-                },
-                  h('div', { className: 'min-w-0 flex-1' },
-                    h('div', { className: 'flex items-center space-x-2' },
-                      h('span', { className: 'font-mono font-bold text-slate-900' }, `#${ord.id}`),
-                      h('span', { className: 'text-[10px] text-slate-400' }, ord.date)
-                    ),
-                    h('p', { className: 'text-[11px] text-slate-600 truncate mt-0.5' }, ord.summary || `${ord.paymentMethod}`),
-                    h('span', { className: 'inline-block mt-1 text-[9px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.2 rounded' }, ord.status)
-                  ),
-                  h('div', { className: 'text-right shrink-0' },
-                    h('div', { className: 'font-black text-xs md:text-sm text-[#FF6600]' }, window.formatVND(ord.total))
-                  )
-                ))
+              h('div', { className: 'bg-slate-50 p-2 rounded-xl' },
+                h('div', { className: 'text-[10px] text-slate-400 font-medium' }, 'Voucher có'),
+                h('div', { className: 'font-black text-[#FF6600] text-sm mt-0.5' }, '4 mã')
+              ),
+              h('div', { className: 'bg-slate-50 p-2 rounded-xl' },
+                h('div', { className: 'text-[10px] text-slate-400 font-medium' }, 'Hạng VIP'),
+                h('div', { className: 'font-black text-blue-600 text-sm mt-0.5' }, 'Kim Cương')
               )
             )
           ),
 
-          // RIGHT COLUMN: ADDRESSES & CARDS/WALLETS
-          h('div', {
-            className: `md:col-span-7 space-y-4 ${
-              activeSection !== 'profile' ? 'block' : 'hidden md:block'
-            }`
+          // 2. Sổ Địa Chỉ Giao Hàng (Full Width, Cards rộng rãi)
+          (activeSection === 'all' || activeSection === 'addresses') && h('div', {
+            className: 'bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs space-y-3'
           },
-            // 3. Saved Addresses Section
-            (activeSection === 'addresses' || true) && h('div', {
-              className: `bg-white rounded-2xl border border-slate-200/90 p-4 md:p-5 shadow-xs space-y-3 ${
-                activeSection === 'addresses' ? 'block' : 'hidden md:block'
-              }`
-            },
-              h('div', { className: 'flex justify-between items-center' },
-                h('h4', { className: 'font-extrabold text-xs md:text-sm text-slate-900 uppercase tracking-wider flex items-center space-x-1.5' },
-                  h(I.MapPin, { size: 15, className: 'text-[#FF6600]' }),
-                  h('span', null, 'Sổ Địa Chỉ Giao Hàng'),
-                  h('span', { className: 'text-[10px] font-bold text-slate-400 ml-1' }, `(${addrList.length})`)
-                ),
-                h('button', {
-                  onClick: () => setShowNewAddrModal(true),
-                  className: 'text-xs text-blue-600 font-bold hover:underline flex items-center space-x-1 cursor-pointer'
-                },
-                  h(I.Plus, { size: 12 }),
-                  h('span', null, 'Thêm địa chỉ')
-                )
+            h('div', { className: 'flex justify-between items-center' },
+              h('h4', { className: 'font-extrabold text-xs text-slate-900 uppercase tracking-wider flex items-center space-x-1.5' },
+                h(I.MapPin, { size: 15, className: 'text-[#FF6600]' }),
+                h('span', null, 'Sổ Địa Chỉ Giao Hàng'),
+                h('span', { className: 'text-[10px] font-bold text-slate-400 ml-1' }, `(${addrList.length})`)
               ),
-              h('div', { className: 'space-y-2' },
-                addrList.map(a => h('div', {
-                  key: a.id,
-                  className: 'bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-xs space-y-1 hover:border-slate-300 transition-all'
-                },
-                  h('div', { className: 'flex items-center justify-between' },
-                    h('span', { className: 'font-bold text-slate-900 flex items-center space-x-1.5' },
-                      h('span', { className: 'bg-white px-2 py-0.5 rounded-md border border-slate-200 font-extrabold text-[10px] text-slate-700' }, a.label),
-                      h('span', { className: 'font-semibold text-slate-700' }, `${a.recipient} • ${a.phone}`)
-                    ),
-                    a.isDefault ? h('span', { className: 'text-[9px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full' }, '✓ Mặc định') :
-                    h('button', {
-                      onClick: () => {
-                        ctx.setAddresses(addrList.map(item => ({ ...item, isDefault: item.id === a.id })));
-                        ctx.showToast(`Đã đặt "${a.label}" làm địa chỉ mặc định!`);
-                      },
-                      className: 'text-[10px] font-bold text-blue-600 hover:underline cursor-pointer'
-                    }, 'Đặt mặc định')
-                  ),
-                  h('p', { className: 'text-[11px] md:text-xs text-slate-600 leading-snug' }, `${a.street}, ${a.ward}, ${a.district}`)
-                ))
+              h('button', {
+                onClick: () => setShowNewAddrModal(true),
+                className: 'text-xs text-blue-600 font-bold hover:underline flex items-center space-x-1 cursor-pointer bg-blue-50 px-2.5 py-1 rounded-lg'
+              },
+                h(I.Plus, { size: 13 }),
+                h('span', null, 'Thêm địa chỉ')
               )
             ),
+            h('div', { className: 'space-y-2' },
+              addrList.map(a => h('div', {
+                key: a.id,
+                className: 'bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-xs space-y-1.5 hover:border-slate-300 transition-all'
+              },
+                h('div', { className: 'flex items-center justify-between gap-2' },
+                  h('div', { className: 'flex items-center space-x-2 flex-wrap gap-y-1' },
+                    h('span', { className: 'bg-orange-50 text-[#FF6600] border border-orange-200 font-extrabold text-[10px] px-2 py-0.5 rounded-md' }, a.label),
+                    h('span', { className: 'font-bold text-slate-800 text-xs' }, a.recipient),
+                    h('span', { className: 'text-slate-300' }, '•'),
+                    h('span', { className: 'font-semibold text-slate-600 text-xs' }, a.phone)
+                  ),
+                  a.isDefault ? h('span', { className: 'shrink-0 text-[9px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full' }, '✓ Mặc định') :
+                  h('button', {
+                    onClick: () => {
+                      ctx.setAddresses(addrList.map(item => ({ ...item, isDefault: item.id === a.id })));
+                      ctx.showToast(`Đã đặt "${a.label}" làm địa chỉ mặc định!`);
+                    },
+                    className: 'shrink-0 text-[10px] font-bold text-blue-600 hover:underline cursor-pointer'
+                  }, 'Đặt mặc định')
+                ),
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, `${a.street}, ${a.ward}, ${a.district}`)
+              ))
+            )
+          ),
 
-            // 4. Interactive 3D Card & Wallet Management
-            (activeSection === 'cards' || true) && h('div', {
-              className: `bg-white rounded-2xl border border-slate-200/90 p-4 md:p-5 shadow-xs space-y-3.5 ${
-                activeSection === 'cards' ? 'block' : 'hidden md:block'
-              }`
-            },
+          // 3. Lịch Sử Đơn Hàng Gần Đây
+          (activeSection === 'all' || activeSection === 'orders') && h('div', {
+            className: 'bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs space-y-3'
+          },
+            h('div', { className: 'flex items-center justify-between' },
+              h('h4', { className: 'font-extrabold text-xs text-slate-900 uppercase tracking-wider flex items-center space-x-1.5' },
+                h(I.Truck, { size: 15, className: 'text-[#FF6600]' }),
+                h('span', null, 'Lịch Sử Đơn Hàng Gần Đây')
+              ),
+              h('span', { className: 'text-[10px] text-blue-600 font-bold cursor-pointer hover:underline' }, 'Xem tất cả')
+            ),
+            orderHist.length === 0 ? h('div', { className: 'text-center py-6 text-xs text-slate-400' }, 'Chưa có đơn hàng nào') :
+            h('div', { className: 'space-y-2' },
+              orderHist.map(ord => h('div', {
+                key: ord.id,
+                className: 'p-3 rounded-xl border border-slate-100 bg-slate-50 hover:bg-slate-100/70 transition-all flex items-center justify-between text-xs space-x-2'
+              },
+                h('div', { className: 'min-w-0 flex-1' },
+                  h('div', { className: 'flex items-center space-x-2' },
+                    h('span', { className: 'font-mono font-bold text-slate-900' }, `#${ord.id}`),
+                    h('span', { className: 'text-[10px] text-slate-400' }, ord.date)
+                  ),
+                  h('p', { className: 'text-[11px] text-slate-600 truncate mt-0.5' }, ord.summary || `${ord.paymentMethod}`),
+                  h('span', { className: 'inline-block mt-1 text-[9px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.2 rounded' }, ord.status)
+                ),
+                h('div', { className: 'text-right shrink-0' },
+                  h('div', { className: 'font-black text-xs text-[#FF6600]' }, window.formatVND(ord.total))
+                )
+              ))
+            )
+          ),
+
+          // 4. Interactive 3D Card & Wallet Management
+          (activeSection === 'all' || activeSection === 'cards') && h('div', {
+            className: 'bg-white rounded-2xl border border-slate-200/90 p-4 shadow-xs space-y-3.5'
+          },
               h('div', { className: 'flex justify-between items-center' },
                 h('h4', { className: 'font-extrabold text-xs md:text-sm text-slate-900 uppercase tracking-wider flex items-center space-x-1.5' },
                   h(I.CreditCard, { size: 15, className: 'text-blue-600' }),
@@ -2047,8 +2033,7 @@
               )
             )
           )
-        )
-      ),
+        ),
 
       // Modal Thêm Địa Chỉ Nhận Hàng Mới
       showNewAddrModal && h('div', {
